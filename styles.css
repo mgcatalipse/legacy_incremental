@@ -1,0 +1,54 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #2c3e50, #4ca1af);
+  color: white;
+  text-align: center;
+  padding-top: 50px;
+}
+
+h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+
+#points {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
+
+.button {
+  display: inline-block;
+  margin: 10px;
+  padding: 15px 25px;
+  background: #3498db;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 5px #2980b9;
+}
+
+.button:hover {
+  background: #3cb0fd;
+  transform: scale(1.05);
+}
+
+.button:active {
+  box-shadow: 0 3px #2980b9;
+  transform: translateY(2px);
+}
+
+.button.disabled {
+  background: #555;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.multiplier-btn.active {
+  background: #27ae60;
+}
+
+#prestige {
+  margin-top: 30px;
+  font-weight: bold;
+}
