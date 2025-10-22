@@ -1,12 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Incremental Game</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #2c3e50, #4ca1af);
+      color: white;
+      text-align: center;
+      padding-top: 50px;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    #points {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+    }
+
+    .button {
+      display: inline-block;
+      margin: 10px;
+      padding: 15px 25px;
+      background: #3498db;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 5px #2980b9;
+    }
+
+    .button:hover {
+      background: #3cb0fd;
+      transform: scale(1.05);
+    }
+
+    .button:active {
+      box-shadow: 0 3px #2980b9;
+      transform: translateY(2px);
+    }
+
+    .button.disabled {
+      background: #555;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .multiplier-btn.active {
+      background: #27ae60;
+    }
+
+    #prestige {
+      margin-top: 30px;
+      font-weight: bold;
+    }
+  </style>
 </head>
-<body style="font-family: Arial; text-align: center; margin-top: 50px;">
-    <h1>Hello, World!</h1>
-    <p>Welcome to my GitHub Page 🎉</p>
+<body>
+  <h1>Incremental Game</h1>
+  <div id="points">Points: 0</div>
+
+  <div>
+    <div class="button" id="start">Start</div>
+    <div class="button" id="stop">Stop</div>
+  </div>
+
+  <div>
+    <div class="button multiplier-btn" id="x1">x1</div>
+    <div class="button multiplier-btn" id="x2">x2</div>
+    <div class="button multiplier-btn" id="x4">x4</div>
+  </div>
+
+  <div>
+    <div class="button" id="gain">Gain Points</div>
+    <div class="button" id="upgrade">Upgrade (Cost: 10)</div>
+  </div>
+
+  <div id="prestige" class="button disabled">Prestige (Requires 1000)</div>
+
+  <script>
+    let points = 0;
+    let baseGain = 1;
+    let multiplier = 1;
+    let upgradeCost = 10;
+    let lastTime = Date.now();
+    let running = false;
+    let prestigeUnlocked = false;
+    let prestigeActive = false;
+
+    // Main game loop
+    function gameLoop() {
+      if (!running) return;
+      const now = Date.now();
+      const delta = now - lastTime;
+      lastTime = now;
+
+      // You can use delta if you add auto gain features later
+      updateUI();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function updateUI() {
+      $("#points").text(`Points: ${Math.floor(points)}`);
+      $("#upgrade").text(`Upgrade (Cost: ${Math.floor(upgradeCost)})`);
+
+      // Unlock prestige at 1000 points
+      if (points >= 1000 && !prestigeUnlocked) {
+        $("#prestige").removeClass("disabled").text("Prestige (Available!)");
+        prestigeUnlocked = true;
+      }
+    }
+
+    // --- Buttons ---
+    $("#start").click(() => {
+      if (!running) {
+        running = true;
+        lastTime = Date.now();
+        gameLoop();
+      }
+    });
+
+    $("#stop").click(() => {
+      running = false;
+    });
+
+    $(".multiplier-btn").click(function () {
+      $(".multiplier-btn").removeClass("active");
+      $(this).addClass("active");
+      multiplier = parseInt($(this).attr("id").substring(1)); // x1, x2, x4
+    });
+
+    $("#gain").click(() => {
+      points += baseGain * multiplier;
+      updateUI();
+    });
+
+    $("#upgrade").click(() => {
+      if (points >= upgradeCost) {
+        points -= upgradeCost;
+        baseGain *= 2;
+        upgradeCost = Math.floor(upgradeCost * 1.7);
+        updateUI();
+      }
+    });
+
+    $("#prestige").click(() => {
+      if (!prestigeUnlocked || points < 2500) return;
+      if (!prestigeActive) {
+        prestigeActive = true;
+        baseGain *= 2;
+        points = 0;
+        prestigeUnlocked = false;
+        upgradeCost = 10;
+        $("#prestige").addClass("disabled").text("Prestige (Done)");
+        updateUI();
+      }
+    });
+
+    // Default selected multiplier
+    $("#x1").addClass("active");
+
+    updateUI();
+  </script>
 </body>
 </html>
