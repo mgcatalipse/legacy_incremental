@@ -376,15 +376,23 @@ function generateEventDescription(event) {
     }
   }
 
+  // Add note about when effects are applied
+  const isSelected = $('.event-checkbox[data-event-id="' + event.id + '"]:checked').length > 0;
+  if (isSelected) {
+    description += ' [Will apply on next age-up]';
+  } else {
+    description += ' [Select to apply on next age-up]';
+  }
+
   return description;
 }
 
-// Get available events based on current age and completed events
+// Get available events based on current age (including completed repeatable events)
 function getAvailableEvents() {
   return LIFE_EVENTS.filter(event => {
     const inAgeRange = gameState.age >= event.ageRange.min && gameState.age <= event.ageRange.max;
-    const notCompleted = !gameState.completedEvents.has(event.id);
-    return inAgeRange && notCompleted;
+    const isRepeatableOrNotCompleted = event.repeatable || !gameState.completedEvents.has(event.id);
+    return inAgeRange && isRepeatableOrNotCompleted;
   });
 }
 
@@ -717,8 +725,9 @@ function updateEventsList() {
   if (oneTimeEvents.length > 0) {
     oneTimeEvents.forEach(event => {
       const costInfo = event.penalties ? generatePenaltyText(event.penalties) : '';
+      const isSelected = $('.event-checkbox[data-event-id="' + event.id + '"]:checked').length > 0;
       eventsList.append(`
-        <div class="event-item">
+        <div class="event-item ${isSelected ? 'selected' : ''}">
           <label class="event-label">
             <input type="checkbox" class="event-checkbox" data-event-id="${event.id}">
             <span class="event-name">${event.name}</span>
@@ -735,12 +744,55 @@ function updateEventsList() {
     eventsList.append('<hr class="event-separator">');
   }
 
+  // Add summary of selected events
+  const selectedEvents = getSelectedEvents();
+  if (selectedEvents.length > 0) {
+    const totalEffects = calculateStatPreviews();
+    const totalPenalties = calculateTotalPenalties();
+
+    let summaryHtml = '<div class="selection-summary"><h4>Selected for Next Age-Up:</h4>';
+
+    // Show total effects
+    const effectTexts = [];
+    for (const [category, stats] of Object.entries(totalEffects)) {
+      for (const [stat, value] of Object.entries(stats)) {
+        if (value !== 0) {
+          const sign = value > 0 ? '+' : '';
+          effectTexts.push(`${sign}${value} ${stat}`);
+        }
+      }
+    }
+
+    if (effectTexts.length > 0) {
+      summaryHtml += `<div class="summary-effects">Effects: ${effectTexts.join(', ')}</div>`;
+    }
+
+    // Show total penalties
+    const penaltyTexts = [];
+    for (const [category, stats] of Object.entries(totalPenalties)) {
+      for (const [stat, value] of Object.entries(stats)) {
+        if (value !== 0) {
+          const sign = value > 0 ? '+' : '';
+          penaltyTexts.push(`${sign}${value} ${stat}`);
+        }
+      }
+    }
+
+    if (penaltyTexts.length > 0) {
+      summaryHtml += `<div class="summary-costs">Total Cost: ${penaltyTexts.join(', ')}</div>`;
+    }
+
+    summaryHtml += '</div>';
+    eventsList.append(summaryHtml);
+  }
+
   // Add repeatable events
   if (repeatableEvents.length > 0) {
     repeatableEvents.forEach(event => {
       const costInfo = event.penalties ? generatePenaltyText(event.penalties) : '';
+      const isSelected = $('.event-checkbox[data-event-id="' + event.id + '"]:checked').length > 0;
       eventsList.append(`
-        <div class="event-item repeatable">
+        <div class="event-item repeatable ${isSelected ? 'selected' : ''}">
           <label class="event-label">
             <input type="checkbox" class="event-checkbox" data-event-id="${event.id}">
             <span class="event-name">${event.name}</span>
@@ -793,7 +845,9 @@ function updateUI() {
 
   // Update death chance on gain button
   const deathChance = calculateDeathChance(gameState.age);
-  $("#gain").text(`Age Up (+1 year, ${deathChance.toFixed(1)}% death risk)`);
+  const selectedCount = $('.event-checkbox:checked').length;
+  const effectText = selectedCount > 0 ? ` + Apply ${selectedCount} selected event${selectedCount > 1 ? 's' : ''}` : '';
+  $("#gain").text(`Age Up (+1 year, ${deathChance.toFixed(1)}% death risk)${effectText}`);
 
   // Handle wife selection UI
   if (gameState.showWifeSelection) {
@@ -850,9 +904,23 @@ $("#gain").click(() => {
   // Check if showing selection UI
   if (gameState.showWifeSelection || gameState.showChildSelection) return;
 
+  // Get selected events and apply their effects
+  const selectedEvents = getSelectedEvents();
+  selectedEvents.forEach(event => {
+    // Apply event effects
+    applyStatEffects(event.effects);
+    // Mark as completed (for one-time events)
+    if (!event.repeatable) {
+      gameState.completedEvents.add(event.id);
+    }
+  });
+
   // Calculate and apply penalties from selected events
   const totalPenalties = calculateTotalPenalties();
   applyStatEffects(totalPenalties);
+
+  // Clear all selections after applying effects
+  $('.event-checkbox:checked').prop('checked', false);
 
   // Age the character by 1 year
   gameState.age += 1;
@@ -925,23 +993,8 @@ function getSelectedEvents() {
   return selectedEvents;
 }
 
-// Enhanced event checkbox handler
+// Event checkbox handler - only updates selection, doesn't apply effects
 $(document).on('change', '.event-checkbox', function() {
-  const eventId = $(this).data('event-id');
-  const event = LIFE_EVENTS.find(e => e.id === eventId);
-
-  if (this.checked) {
-    // Apply event effects immediately
-    applyStatEffects(event.effects);
-    gameState.completedEvents.add(eventId);
-  } else {
-    // Remove event effects if unchecked (for repeatable events)
-    if (event.repeatable) {
-      applyStatEffects(invertEffects(event.effects));
-      gameState.completedEvents.delete(eventId);
-    }
-  }
-
   // Update UI with new previews
   updateUI();
 });
