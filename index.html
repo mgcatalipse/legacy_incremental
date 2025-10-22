@@ -21,8 +21,6 @@
     </div>
   </div>
 
-  <!-- Points Display -->
-  <div id="points">Points: 0</div>
 
   <!-- Tab Navigation -->
   <div id="tab-nav">
@@ -35,11 +33,25 @@
   <!-- Tab Content -->
   <div id="tab-content">
     <div class="tab-pane active" id="human">
-      <div>
-        <div class="button" id="gain">Gain Points</div>
-        <div class="button" id="upgrade">Upgrade (Cost: 10)</div>
+      <div class="human-content">
+        <div class="left-side">
+          <div id="age-display">
+            <h2 id="age-title">Infant</h2>
+            <div id="age-points">Age: 0</div>
+          </div>
+        </div>
+        <div class="vertical-separator"></div>
+        <div class="right-side">
+          <div id="events-container">
+            <h3>Life Events</h3>
+            <div id="events-list"></div>
+          </div>
+          <div id="prestige" class="button disabled">Prestige (Requires Age 18)</div>
+        </div>
       </div>
-      <div id="prestige" class="button disabled">Prestige (Requires 1000)</div>
+      <div class="gain-bar">
+        <div class="button" id="gain">Try to survive next year</div>
+      </div>
     </div>
     <div class="tab-pane" id="business">
       <p>Business features coming soon...</p>
