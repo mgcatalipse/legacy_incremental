@@ -8,26 +8,49 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Incremental Game</h1>
+  <!-- Banner -->
+  <div id="banner">
+    <div id="game-title">Lineage Incremental</div>
+    <div id="time-controls">
+      <span id="time-label">Time:</span>
+      <span id="game-time">0:00</span>
+      <div class="button" id="pause-restart">⏸️</div>
+      <div class="button multiplier-btn" id="x1">x1</div>
+      <div class="button multiplier-btn" id="x2">x2</div>
+      <div class="button multiplier-btn" id="x4">x4</div>
+    </div>
+  </div>
+
+  <!-- Points Display -->
   <div id="points">Points: 0</div>
 
-  <div>
-    <div class="button" id="start">Start</div>
-    <div class="button" id="stop">Stop</div>
+  <!-- Tab Navigation -->
+  <div id="tab-nav">
+    <div class="tab-btn active" data-tab="human">Human</div>
+    <div class="tab-btn hidden" data-tab="business">Business</div>
+    <div class="tab-btn hidden" data-tab="empire">Empire</div>
+    <div class="tab-btn hidden" data-tab="universe">Universe</div>
   </div>
 
-  <div>
-    <div class="button multiplier-btn" id="x1">x1</div>
-    <div class="button multiplier-btn" id="x2">x2</div>
-    <div class="button multiplier-btn" id="x4">x4</div>
+  <!-- Tab Content -->
+  <div id="tab-content">
+    <div class="tab-pane active" id="human">
+      <div>
+        <div class="button" id="gain">Gain Points</div>
+        <div class="button" id="upgrade">Upgrade (Cost: 10)</div>
+      </div>
+      <div id="prestige" class="button disabled">Prestige (Requires 1000)</div>
+    </div>
+    <div class="tab-pane" id="business">
+      <p>Business features coming soon...</p>
+    </div>
+    <div class="tab-pane" id="empire">
+      <p>Empire features coming soon...</p>
+    </div>
+    <div class="tab-pane" id="universe">
+      <p>Universe features coming soon...</p>
+    </div>
   </div>
-
-  <div>
-    <div class="button" id="gain">Gain Points</div>
-    <div class="button" id="upgrade">Upgrade (Cost: 10)</div>
-  </div>
-
-  <div id="prestige" class="button disabled">Prestige (Requires 1000)</div>
 
   <script src="script.js"></script>
 </body>
