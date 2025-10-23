@@ -729,7 +729,7 @@ function updateEventsList() {
       eventsList.append(`
         <div class="event-item ${isSelected ? 'selected' : ''}">
           <label class="event-label">
-            <input type="checkbox" class="event-checkbox" data-event-id="${event.id}">
+            <input type="checkbox" class="event-checkbox" data-event-id="${event.id}" ${isSelected ? 'checked' : ''}>
             <span class="event-name">${event.name}</span>
           </label>
           <div class="event-description">${generateEventDescription(event)}</div>
@@ -794,7 +794,7 @@ function updateEventsList() {
       eventsList.append(`
         <div class="event-item repeatable ${isSelected ? 'selected' : ''}">
           <label class="event-label">
-            <input type="checkbox" class="event-checkbox" data-event-id="${event.id}">
+            <input type="checkbox" class="event-checkbox" data-event-id="${event.id}" ${isSelected ? 'checked' : ''}>
             <span class="event-name">${event.name}</span>
             <span class="repeatable-badge">Repeatable</span>
           </label>
@@ -835,9 +835,6 @@ function updateUI() {
 
   // Update stats display with previews
   updateStatsDisplay();
-
-  // Update available events
-  updateEventsList();
 
   // Update game time display
   const timeStr = formatTime(gameState.gameTime);
@@ -941,6 +938,9 @@ $("#gain").click(() => {
   if (gameState.age >= 65 && gameState.children.length > 0) {
     gameState.showChildSelection = true;
   }
+
+  // Update available events
+  updateEventsList();
 
   updateUI();
 });
