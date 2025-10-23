@@ -88,10 +88,11 @@ function formatTime(seconds) {
 }
 
 // Calculate death chance for display (without actually checking death)
-function calculateDeathChance(age) {
+function calculateDeathChance(age, stats = null) {
   const ageGroup = getCurrentAgeGroup(age);
-  const health = gameState.stats.innate.health.value;
-  const stress = gameState.stats.innate.stress.value;
+  const targetStats = stats || gameState.stats;
+  const health = targetStats.innate.health.value;
+  const stress = targetStats.innate.stress.value;
 
   // Base death chance from age group
   let deathChance = ageGroup.deathChance;

@@ -1,3 +1,15 @@
+// Helper function to determine the CSS class for stat value based on stat name and preview change
+function getStatClass(statName, previewChange) {
+  if (statName === 'stress') {
+    if (previewChange > 0) return 'stat-stress-positive-shadow-red';
+    if (previewChange < 0) return 'stat-stress-negative-green';
+  } else {
+    if (previewChange > 0) return 'stat-positive-green';
+    if (previewChange < 0) return 'stat-negative-shadow-red';
+  }
+  return '';
+}
+
 // Update stats display with previews
 // This function refreshes the stats UI to show current values along with preview changes
 // from selected events. It calls calculateStatPreviews() to get the total changes and
@@ -5,7 +17,9 @@
 // This provides real-time feedback on how stats will change before applying events.
 // It is triggered by the event listener in script.js when checkboxes are changed.
 function updateStatsDisplay() {
+  console.log('updateStatsDisplay called');
   const previews = calculateStatPreviews();
+  console.log('Updating stats display with previews:', previews);
   let statsHtml = '<div id="stats-display"><h3>Stats</h3>';
 
   // Innate stats
@@ -13,13 +27,16 @@ function updateStatsDisplay() {
   for (const [stat, data] of Object.entries(gameState.stats.innate)) {
     const currentValue = data.value;
     const previewChange = previews.innate[stat] || 0;
-    const previewText = previewChange !== 0 ? ` (${previewChange > 0 ? '+' : ''}${previewChange})` : '';
+    const changeSign = previewChange > 0 ? '+' : (previewChange < 0 ? '' : '');
+    const displayChange = `${changeSign}${previewChange}`;
+    const previewText = previewChange !== 0 ? ` (${displayChange})` : '';
     const finalValue = Math.max(data.min, Math.min(data.max, currentValue + previewChange));
 
+    const statClass = getStatClass(stat, previewChange);
     statsHtml += `
       <div class="stat-item">
         <span class="stat-name">${stat.charAt(0).toUpperCase() + stat.slice(1)}:</span>
-        <span class="stat-value">${Math.floor(currentValue)}${previewText}</span>
+        <span class="stat-value ${statClass}">${Math.floor(finalValue)}${previewText}</span>
       </div>
     `;
   }
@@ -30,13 +47,16 @@ function updateStatsDisplay() {
   for (const [stat, data] of Object.entries(gameState.stats.skills)) {
     const currentValue = data.value;
     const previewChange = previews.skills[stat] || 0;
-    const previewText = previewChange !== 0 ? ` (${previewChange > 0 ? '+' : ''}${previewChange})` : '';
+    const changeSign = previewChange > 0 ? '+' : (previewChange < 0 ? '' : '');
+    const displayChange = `${changeSign}${previewChange}`;
+    const previewText = previewChange !== 0 ? ` (${displayChange})` : '';
     const finalValue = Math.max(data.min, Math.min(data.max, currentValue + previewChange));
 
+    const statClass = getStatClass(stat, previewChange);
     statsHtml += `
       <div class="stat-item">
         <span class="stat-name">${stat.charAt(0).toUpperCase() + stat.slice(1)}:</span>
-        <span class="stat-value">${Math.floor(currentValue)}${previewText}</span>
+        <span class="stat-value ${statClass}">${Math.floor(finalValue)}${previewText}</span>
       </div>
     `;
   }
@@ -47,16 +67,18 @@ function updateStatsDisplay() {
   for (const [stat, data] of Object.entries(gameState.stats.possessions)) {
     const currentValue = data.value;
     const previewChange = previews.possessions[stat] || 0;
-    const previewText = previewChange !== 0 ? ` (${previewChange > 0 ? '+' : ''}${previewChange})` : '';
+    const changeSign = previewChange > 0 ? '+' : (previewChange < 0 ? '' : '');
+    const displayChange = stat === 'money' ? `${changeSign}$${Math.abs(previewChange)}` : `${changeSign}${previewChange}`;
+    const previewText = previewChange !== 0 ? ` (${displayChange})` : '';
     const finalValue = Math.max(data.min, Math.min(data.max, currentValue + previewChange));
 
-    const displayValue = stat === 'money' ? `$${Math.floor(currentValue)}` : `${Math.floor(currentValue)}`;
-    const displayChange = stat === 'money' ? `$${previewChange}` : previewChange;
+    const displayValue = stat === 'money' ? `$${Math.floor(finalValue)}` : `${Math.floor(finalValue)}`;
 
+    const statClass = getStatClass(stat, previewChange);
     statsHtml += `
       <div class="stat-item">
         <span class="stat-name">${stat.charAt(0).toUpperCase() + stat.slice(1)}:</span>
-        <span class="stat-value">${displayValue}${previewText}</span>
+        <span class="stat-value ${statClass}">${displayValue}${previewText}</span>
       </div>
     `;
   }
@@ -94,10 +116,30 @@ function updateTimeDisplay() {
 
 // Helper function to update gain button with death chance
 function updateGainButton() {
-  const deathChance = calculateDeathChance(gameState.age);
+  console.log('updateGainButton called');
+  const previews = calculateStatPreviews();
+  console.log('Previews:', previews);
+  const finalStats = computeFinalStats(previews);
+  console.log('Final stats:', finalStats);
+  const deathChance = calculateDeathChance(gameState.age, finalStats);
+  console.log('Death chance:', deathChance);
   const selectedCount = $('.event-checkbox:checked').length;
   const effectText = selectedCount > 0 ? ` + Apply ${selectedCount} selected event${selectedCount > 1 ? 's' : ''}` : '';
-  $("#gain").text(`Age Up (+1 year, ${deathChance.toFixed(1)}% death risk)${effectText}`);
+
+  // Update button text
+  const newText = `Age Up (+1 year, ${deathChance.toFixed(1)}% death risk)${effectText}`;
+  console.log('Setting gain button text to:', newText);
+  $("#gain").text(newText);
+
+  // Update color scheme based on risk level
+  $("#gain").removeClass('gain-low-risk gain-medium-risk gain-high-risk');
+  if (deathChance < 10) {
+    $("#gain").addClass('gain-low-risk');
+  } else if (deathChance < 50) {
+    $("#gain").addClass('gain-medium-risk');
+  } else {
+    $("#gain").addClass('gain-high-risk');
+  }
 }
 
 // Helper function to handle special UI states

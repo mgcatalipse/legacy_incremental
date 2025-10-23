@@ -13,7 +13,7 @@ const LIFE_EVENTS = [
       possessions: {}
     },
     penalties: {
-      innate: { health: 2 },
+      innate: { health: -2 },
       skills: {},
       possessions: {}
     },

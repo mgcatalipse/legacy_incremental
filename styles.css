@@ -44,6 +44,18 @@ h1 {
   box-shadow: none;
 }
 
+.gain-low-risk {
+  background: #27ae60 !important;
+}
+
+.gain-medium-risk {
+  background: #f39c12 !important;
+}
+
+.gain-high-risk {
+  background: #e74c3c !important;
+}
+
 .multiplier-btn.active {
   background: #27ae60;
 }
@@ -169,6 +181,22 @@ h1 {
 
 .stat-value {
   font-weight: bold;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stat-positive-green {
+  color: #2ecc71;
+}
+
+.stat-negative-shadow-red {
+  color: #e74c3c;
+}
+
+.stat-stress-positive-shadow-red {
+  color: #e74c3c;
+}
+
+.stat-stress-negative-green {
   color: #2ecc71;
 }
 

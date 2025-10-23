@@ -107,6 +107,7 @@ function showWifeSelection() {
 
       alert(`Child created! ${child.name} born with mixed stats from you and ${selectedWife.name}`);
       updateUI();
+      updateEventsList();
     } else {
       alert('Not enough money to marry this person!');
     }
@@ -155,6 +156,7 @@ function showChildSelection() {
     $('#child-selection').remove();
     alert(`Now playing as ${selectedChild.name}!`);
     updateUI();
+    updateEventsList();
   });
 }
 
@@ -169,6 +171,7 @@ function resetForNewLife() {
   gameState.selectedWife = null;
   gameState.showChildSelection = false;
   updateUI();
+  updateEventsList();
 }
 
 // No export, functions are global

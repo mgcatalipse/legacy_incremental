@@ -17,8 +17,7 @@ function generateEventDescription(event) {
     for (const [category, stats] of Object.entries(event.penalties)) {
       for (const [stat, value] of Object.entries(stats)) {
         if (value !== 0) {
-          const sign = value > 0 ? '+' : '';
-          penaltyTexts.push(`${sign}${value} ${stat}`);
+          penaltyTexts.push(`${value} ${stat}`);
         }
       }
     }
@@ -53,6 +52,7 @@ function getAvailableEvents() {
 // It is called by updateStatsDisplay() to provide real-time previews of how stats will change
 // before the user applies the events by clicking the "Age Up" button.
 function calculateStatPreviews() {
+  console.log('calculateStatPreviews called');
   const selectedEvents = getSelectedEvents();
   const totalPenalties = calculateTotalPenalties();
 
@@ -84,6 +84,7 @@ function calculateStatPreviews() {
     }
   }
 
+  console.log('Stat previews calculated:', totalEffects);
   return totalEffects;
 }
 
@@ -98,6 +99,14 @@ function calculateTotalPenalties() {
     skills: {},
     possessions: {}
   };
+
+  console.log('Calculating penalties for', selectedEvents.length, 'events');
+
+  // Only apply penalties if more than one event is selected
+  if (selectedEvents.length <= 1) {
+    console.log('No penalties applied: only', selectedEvents.length, 'event(s) selected');
+    return totalPenalties;
+  }
 
   selectedEvents.forEach(event => {
     const multiplier = selectedEvents.length; // Multiply by number of selected events
@@ -119,6 +128,7 @@ function calculateTotalPenalties() {
     }
   });
 
+  console.log('Total penalties calculated:', totalPenalties);
   return totalPenalties;
 }
 
@@ -138,7 +148,29 @@ function getSelectedEvents() {
     }
   });
 
+  console.log('Selected events count:', selectedEvents.length);
   return selectedEvents;
+}
+
+// Compute final stats after applying preview changes
+// This function calculates the final stats by applying the preview changes to the current stats.
+// It is used to determine the death chance based on the stats after applying selected events.
+function computeFinalStats(previews) {
+  const finalStats = JSON.parse(JSON.stringify(gameState.stats)); // Deep copy
+
+  for (const [category, stats] of Object.entries(previews)) {
+    for (const [stat, change] of Object.entries(stats)) {
+      if (finalStats[category] && finalStats[category][stat]) {
+        const newValue = finalStats[category][stat].value + change;
+        finalStats[category][stat].value = Math.max(
+          finalStats[category][stat].min,
+          Math.min(finalStats[category][stat].max, newValue)
+        );
+      }
+    }
+  }
+
+  return finalStats;
 }
 
 // Generate penalty text for display
@@ -147,8 +179,7 @@ function generatePenaltyText(penalties) {
   for (const [category, stats] of Object.entries(penalties)) {
     for (const [stat, value] of Object.entries(stats)) {
       if (value !== 0) {
-        const sign = value > 0 ? '+' : '';
-        penaltyTexts.push(`${sign}${value} ${stat}`);
+        penaltyTexts.push(`-${value} ${stat}`);
       }
     }
   }
@@ -207,8 +238,7 @@ function buildSelectionSummaryHtml() {
   for (const [category, stats] of Object.entries(totalEffects)) {
     for (const [stat, value] of Object.entries(stats)) {
       if (value !== 0) {
-        const sign = value > 0 ? '+' : '';
-        effectTexts.push(`${sign}${value} ${stat}`);
+        effectTexts.push(`${value} ${stat}`);
       }
     }
   }
@@ -222,8 +252,7 @@ function buildSelectionSummaryHtml() {
   for (const [category, stats] of Object.entries(totalPenalties)) {
     for (const [stat, value] of Object.entries(stats)) {
       if (value !== 0) {
-        const sign = value > 0 ? '+' : '';
-        penaltyTexts.push(`${sign}${value} ${stat}`);
+        penaltyTexts.push(`-${value} ${stat}`);
       }
     }
   }

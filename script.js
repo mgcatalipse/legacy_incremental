@@ -135,10 +135,13 @@ updateUI();
 updateEventsList();
 // Event listener for event checkboxes to update previews on change
 // This listener triggers when a user checks or unchecks an event checkbox.
-// It calls updateStatsDisplay() to refresh the stats with preview changes
+// It calls updateStatsDisplay() to refresh the stats with preview changes,
+// updateGainButton() to update the death chance preview,
 // and updateEventsList() to update the events UI, including the selection summary.
 // This enables real-time preview of stat changes before applying them.
 $(document).on('change', '.event-checkbox', function() {
-    updateStatsDisplay();
-    updateEventsList();
+       console.log('Event checkbox changed for', $(this).data('event-id'));
+       updateStatsDisplay();
+       updateGainButton();
+       console.log('After updateGainButton');
 });
