@@ -80,23 +80,6 @@ h1 {
   font-weight: bold;
 }
 
-#time-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-#time-label {
-  font-size: 1.2em;
-  margin-right: 5px;
-  display: none;
-}
-
-#game-time {
-  font-size: 1.2em;
-  margin-right: 10px;
-  display: none;
-}
 
 .tab-btn.hidden {
   display: none;
@@ -108,14 +91,14 @@ h1 {
 
 /* Human Tab Layout */
 .human-content {
-  display: flex;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: 1fr 10px 1fr;
   gap: 20px;
   margin-bottom: 20px;
 }
 
 .left-side {
-  flex: 1;
+  grid-column: 1;
   padding: 20px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
@@ -123,7 +106,7 @@ h1 {
 }
 
 .right-side {
-  flex: 1;
+  grid-column: 3;
   padding: 20px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
@@ -134,9 +117,11 @@ h1 {
 }
 
 .vertical-separator {
-  width: 2px;
+  grid-column: 2;
   background: rgba(255, 255, 255, 0.3);
-  flex-shrink: 0;
+  cursor: col-resize;
+  width: 100%;
+  height: 100%;
 }
 
 #age-display h2 {
@@ -424,4 +409,17 @@ h1 {
 /* Adjust body padding */
 body {
   padding-top: 20px;
+}
+
+/* Penalty multiplier colors */
+.penalty-yellow {
+  color: #f39c12;
+}
+
+.penalty-green {
+  color: #2ecc71;
+}
+
+.penalty-red {
+  color: #e74c3c;
 }

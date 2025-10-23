@@ -1,17 +1,3 @@
-// Main game loop
-function gameLoop() {
-  if (!gameState.running) return;
-  const now = Date.now();
-  const delta = now - gameState.lastTime;
-  gameState.lastTime = now;
-
-  // Update game time
-  gameState.gameTime += delta / 1000; // Convert to seconds
-
-  // You can use delta if you add auto gain features later
-  updateUI();
-  requestAnimationFrame(gameLoop);
-}
 
 // Get current age group based on age
 function getCurrentAgeGroup(age) {
@@ -70,22 +56,6 @@ function applyStatEffects(effects) {
   }
 }
 
-// Format time in YY:MM:dd h:m:s, showing only relevant units
-function formatTime(seconds) {
-  const years = Math.floor(seconds / (365 * 24 * 60 * 60));
-  const days = Math.floor((seconds % (365 * 24 * 60 * 60)) / (24 * 60 * 60));
-  const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
-  const mins = Math.floor((seconds % (60 * 60)) / 60);
-  const secs = Math.floor(seconds % 60);
-
-  let timeStr = '';
-  if (years > 0) timeStr += `${years}:`;
-  if (days > 0 || years > 0) timeStr += `${days.toString().padStart(2, '0')}:`;
-  if (hours > 0 || days > 0 || years > 0) timeStr += `${hours.toString().padStart(2, '0')}:`;
-  timeStr += `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-
-  return timeStr;
-}
 
 // Calculate death chance for display (without actually checking death)
 function calculateDeathChance(age, stats = null) {

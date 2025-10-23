@@ -11,22 +11,6 @@ function generateEventDescription(event) {
     }
   }
 
-  // Add penalty information if penalties exist
-  if (event.penalties) {
-    const penaltyTexts = [];
-    for (const [category, stats] of Object.entries(event.penalties)) {
-      for (const [stat, value] of Object.entries(stats)) {
-        if (value !== 0) {
-          penaltyTexts.push(`${value} ${stat}`);
-        }
-      }
-    }
-
-    if (penaltyTexts.length > 0) {
-      description += ` (Cost: ${penaltyTexts.join(', ')})`;
-    }
-  }
-
   // Add note about when effects are applied
   const isSelected = $('.event-checkbox[data-event-id="' + event.id + '"]:checked').length > 0;
   if (isSelected) {
@@ -188,9 +172,23 @@ function generatePenaltyText(penalties) {
 
 // Helper function to build HTML for one-time events
 function buildOneTimeEventsHtml(events) {
+  const selectedCount = getSelectedEvents().length;
+  const Y = 1; // Assuming Y is 1 as penalties start when >1
   return events.map(event => {
-    const costInfo = event.penalties ? generatePenaltyText(event.penalties) : '';
+    const costInfo = (event.penalties && selectedCount > 1) ? generatePenaltyText(event.penalties) : '';
     const isSelected = $('.event-checkbox[data-event-id="' + event.id + '"]:checked').length > 0;
+    let penaltyDisplay = '';
+    if (selectedCount > 0) {
+      let colorClass = '';
+      if (selectedCount < Y) {
+        colorClass = 'penalty-yellow';
+      } else if (selectedCount === Y) {
+        colorClass = 'penalty-green';
+      } else {
+        colorClass = 'penalty-red';
+      }
+      penaltyDisplay = `<span class="penalty-multiplier ${colorClass}"> (${selectedCount} / ${Y}) cost penalty ${selectedCount}</span>`;
+    }
     return `
       <div class="event-item ${isSelected ? 'selected' : ''}">
         <label class="event-label">
@@ -199,6 +197,7 @@ function buildOneTimeEventsHtml(events) {
         </label>
         <div class="event-description">${generateEventDescription(event)}</div>
         ${costInfo ? `<div class="event-cost">Cost: ${costInfo}</div>` : ''}
+        ${penaltyDisplay}
       </div>
     `;
   }).join('');
@@ -206,9 +205,23 @@ function buildOneTimeEventsHtml(events) {
 
 // Helper function to build HTML for repeatable events
 function buildRepeatableEventsHtml(events) {
+  const selectedCount = getSelectedEvents().length;
+  const Y = 1;
   return events.map(event => {
-    const costInfo = event.penalties ? generatePenaltyText(event.penalties) : '';
+    const costInfo = (event.penalties && selectedCount > 1) ? generatePenaltyText(event.penalties) : '';
     const isSelected = $('.event-checkbox[data-event-id="' + event.id + '"]:checked').length > 0;
+    let penaltyDisplay = '';
+    if (selectedCount > 0) {
+      let colorClass = '';
+      if (selectedCount < Y) {
+        colorClass = 'penalty-yellow';
+      } else if (selectedCount === Y) {
+        colorClass = 'penalty-green';
+      } else {
+        colorClass = 'penalty-red';
+      }
+      penaltyDisplay = `<span class="penalty-multiplier ${colorClass}"> (${selectedCount} / ${Y}) cost penalty ${selectedCount}</span>`;
+    }
     return `
       <div class="event-item repeatable ${isSelected ? 'selected' : ''}">
         <label class="event-label">
@@ -218,6 +231,7 @@ function buildRepeatableEventsHtml(events) {
         </label>
         <div class="event-description">${generateEventDescription(event)}</div>
         ${costInfo ? `<div class="event-cost">Cost per use: ${costInfo}</div>` : ''}
+        ${penaltyDisplay}
       </div>
     `;
   }).join('');
@@ -229,7 +243,26 @@ function buildSelectionSummaryHtml() {
   if (selectedEvents.length === 0) return '';
 
   const totalEffects = calculateStatPreviews();
-  const totalPenalties = calculateTotalPenalties();
+
+  // Calculate total penalties with breakdown
+  const numEvents = selectedEvents.length;
+  let totalPenalties = { innate: {}, skills: {}, possessions: {} };
+  let breakdown = { innate: {}, skills: {}, possessions: {} };
+
+  selectedEvents.forEach(event => {
+    const multiplier = numEvents;
+    const factor = event.specialFactor || 1;
+    if (event.penalties) {
+      for (const [category, stats] of Object.entries(event.penalties)) {
+        for (const [stat, value] of Object.entries(stats)) {
+          if (!totalPenalties[category][stat]) totalPenalties[category][stat] = 0;
+          totalPenalties[category][stat] += value * multiplier * factor;
+          if (!breakdown[category][stat]) breakdown[category][stat] = [];
+          breakdown[category][stat].push(`${value} * ${multiplier} * ${factor}`);
+        }
+      }
+    }
+  });
 
   let summaryHtml = '<div class="selection-summary"><h4>Selected for Next Age-Up:</h4>';
 
@@ -247,12 +280,13 @@ function buildSelectionSummaryHtml() {
     summaryHtml += `<div class="summary-effects">Effects: ${effectTexts.join(', ')}</div>`;
   }
 
-  // Show total penalties
+  // Show total penalties with breakdown
   const penaltyTexts = [];
   for (const [category, stats] of Object.entries(totalPenalties)) {
     for (const [stat, value] of Object.entries(stats)) {
       if (value !== 0) {
-        penaltyTexts.push(`-${value} ${stat}`);
+        const calc = breakdown[category][stat].join(' + ');
+        penaltyTexts.push(`-${Math.abs(value)} ${stat} (${calc} = ${value})`);
       }
     }
   }

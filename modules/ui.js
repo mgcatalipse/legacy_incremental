@@ -108,11 +108,6 @@ function updateAgeDisplay() {
   $("#age-points").text(`Age: ${gameState.age}`);
 }
 
-// Helper function to update time display
-function updateTimeDisplay() {
-  const timeStr = formatTime(gameState.gameTime);
-  $("#game-time").text(timeStr);
-}
 
 // Helper function to update gain button with death chance
 function updateGainButton() {
@@ -164,7 +159,6 @@ function handleSpecialUIStates() {
 function updateUI() {
   updateAgeDisplay();
   updateStatsDisplay();
-  updateTimeDisplay();
   updateGainButton();
   handleSpecialUIStates();
 }

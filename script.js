@@ -3,11 +3,8 @@ const gameState = {
   age: 0,
   baseGain: 1,
   multiplier: 1,
-  lastTime: Date.now(),
-  running: false,
   prestigeUnlocked: false,
   prestigeActive: false,
-  gameTime: 0,
   startTime: null,
   isDead: false,
   stats: JSON.parse(JSON.stringify(STATS)), // Deep copy
@@ -20,18 +17,6 @@ const gameState = {
   showChildSelection: false
 };
 
-// --- Buttons ---
-$("#pause-restart").click(() => {
-  if (gameState.running) {
-    gameState.running = false;
-    $("#pause-restart").text("▶️"); // Play icon when paused
-  } else {
-    gameState.running = true;
-    gameState.lastTime = Date.now();
-    $("#pause-restart").text("⏸️"); // Pause icon when running
-    gameLoop();
-  }
-});
 
 // Tab switching
 $(".tab-btn").click(function () {
@@ -46,11 +31,7 @@ $(".tab-btn").click(function () {
   $(`#${tabId}`).addClass("active");
 });
 
-$(".multiplier-btn").click(function () {
-  $(".multiplier-btn").removeClass("active");
-  $(this).addClass("active");
-  gameState.multiplier = parseInt($(this).attr("id").substring(1)); // x1, x2, x4
-});
+// Multiplier buttons removed
 
 $("#gain").click(() => {
   if (gameState.isDead) return;
@@ -82,7 +63,6 @@ $("#gain").click(() => {
   // Check for death
   if (checkDeath(gameState.age)) {
     gameState.isDead = true;
-    updateUI();
     return;
   }
 
@@ -114,34 +94,48 @@ $("#prestige").click(() => {
     gameState.stats = JSON.parse(JSON.stringify(STATS)); // Reset stats
     $("#prestige").addClass("disabled").text("Prestige (Done)");
 
-    // Unlock Business tab on first prestige
-    if (!$('[data-tab="business"]').hasClass('unlocked')) {
-      $('[data-tab="business"]').removeClass('hidden').addClass('unlocked');
-      // Show time display when Business tab is unlocked
-      $('#time-label, #game-time').show();
-    }
-
     updateUI();
   }
 });
 
-// Default selected multiplier
-$("#x1").addClass("active");
+// Multiplier buttons removed
 
-// Set initial pause-restart state
-$("#pause-restart").text("▶️"); // Start with play icon
-
-updateUI();
 updateEventsList();
+updateUI();
 // Event listener for event checkboxes to update previews on change
 // This listener triggers when a user checks or unchecks an event checkbox.
-// It calls updateStatsDisplay() to refresh the stats with preview changes,
-// updateGainButton() to update the death chance preview,
-// and updateEventsList() to update the events UI, including the selection summary.
-// This enables real-time preview of stat changes before applying them.
+// It calls updateUI() to refresh the entire UI with preview changes.
 $(document).on('change', '.event-checkbox', function() {
-       console.log('Event checkbox changed for', $(this).data('event-id'));
-       updateStatsDisplay();
-       updateGainButton();
-       console.log('After updateGainButton');
+         console.log('Event checkbox changed for', $(this).data('event-id'));
+         updateUI();
+         console.log('After updateUI');
+ });
+
+// Resizable separator functionality
+const separator = $('.vertical-separator')[0];
+const leftSide = $('.left-side')[0];
+const rightSide = $('.right-side')[0];
+const container = $('.human-content')[0];
+
+let isDragging = false;
+
+separator.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    isDragging = true;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
 });
+
+function onMouseMove(e) {
+    if (!isDragging) return;
+    const containerRect = container.getBoundingClientRect();
+    let leftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+    leftWidth = Math.max(20, Math.min(80, leftWidth)); // Clamp between 20% and 80%
+    container.style.gridTemplateColumns = `${leftWidth}% 10px ${100 - leftWidth}%`;
+}
+
+function onMouseUp() {
+    isDragging = false;
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+}
