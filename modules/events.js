@@ -78,6 +78,7 @@ function calculateStatPreviews() {
 // Penalties are integrated into the stat previews to show the full impact of selections.
 function calculateTotalPenalties() {
   const selectedEvents = getSelectedEvents();
+  const Y = getMaxEvents();
   let totalPenalties = {
     innate: {},
     skills: {},
@@ -86,9 +87,9 @@ function calculateTotalPenalties() {
 
   console.log('Calculating penalties for', selectedEvents.length, 'events');
 
-  // Only apply penalties if more than one event is selected
-  if (selectedEvents.length <= 1) {
-    console.log('No penalties applied: only', selectedEvents.length, 'event(s) selected');
+  // Only apply penalties if more events are selected than allowed
+  if (selectedEvents.length <= Y) {
+    console.log('No penalties applied: only', selectedEvents.length, 'event(s) selected, max allowed:', Y);
     return totalPenalties;
   }
 
@@ -136,6 +137,12 @@ function getSelectedEvents() {
   return selectedEvents;
 }
 
+// Get maximum number of events allowed before penalties based on age group
+function getMaxEvents() {
+  const ageGroup = getCurrentAgeGroup(gameState.age);
+  return ageGroup.name === 'Teenager' ? 2 : 1;
+}
+
 // Compute final stats after applying preview changes
 // This function calculates the final stats by applying the preview changes to the current stats.
 // It is used to determine the death chance based on the stats after applying selected events.
@@ -173,31 +180,43 @@ function generatePenaltyText(penalties) {
 // Helper function to build HTML for one-time events
 function buildOneTimeEventsHtml(events) {
   const selectedCount = getSelectedEvents().length;
-  const Y = 1; // Assuming Y is 1 as penalties start when >1
+  const Y = getMaxEvents();
   return events.map(event => {
-    const costInfo = (event.penalties && selectedCount > 1) ? generatePenaltyText(event.penalties) : '';
     const isSelected = $('.event-checkbox[data-event-id="' + event.id + '"]:checked').length > 0;
-    let penaltyDisplay = '';
+    let displayText = `<span class="event-name">${event.name}</span>`;
     if (selectedCount > 0) {
       let colorClass = '';
-      if (selectedCount < Y) {
-        colorClass = 'penalty-yellow';
-      } else if (selectedCount === Y) {
+      if (selectedCount <= Y) {
         colorClass = 'penalty-green';
       } else {
         colorClass = 'penalty-red';
       }
-      penaltyDisplay = `<span class="penalty-multiplier ${colorClass}"> (${selectedCount} / ${Y}) cost penalty ${selectedCount}</span>`;
+      displayText += ` <span class="penalty-multiplier ${colorClass}">(${selectedCount}/${Y})</span>`;
+      if (selectedCount > Y) {
+        const multiplier = selectedCount;
+        const factor = event.specialFactor || 1;
+        const finalMultiplier = multiplier * factor;
+        const penaltyTexts = [];
+        if (event.penalties) {
+          for (const [category, stats] of Object.entries(event.penalties)) {
+            for (const [stat, value] of Object.entries(stats)) {
+              const multipliedValue = value * finalMultiplier;
+              penaltyTexts.push(`-${multipliedValue} ${stat}`);
+            }
+          }
+        }
+        if (penaltyTexts.length > 0) {
+          displayText += ` <span class="penalty-details">Penalties: ${penaltyTexts.join(', ')}</span>`;
+        }
+      }
     }
     return `
       <div class="event-item ${isSelected ? 'selected' : ''}">
         <label class="event-label">
           <input type="checkbox" class="event-checkbox" data-event-id="${event.id}" ${isSelected ? 'checked' : ''}>
-          <span class="event-name">${event.name}</span>
+          ${displayText}
         </label>
         <div class="event-description">${generateEventDescription(event)}</div>
-        ${costInfo ? `<div class="event-cost">Cost: ${costInfo}</div>` : ''}
-        ${penaltyDisplay}
       </div>
     `;
   }).join('');
@@ -206,32 +225,43 @@ function buildOneTimeEventsHtml(events) {
 // Helper function to build HTML for repeatable events
 function buildRepeatableEventsHtml(events) {
   const selectedCount = getSelectedEvents().length;
-  const Y = 1;
+  const Y = getMaxEvents();
   return events.map(event => {
-    const costInfo = (event.penalties && selectedCount > 1) ? generatePenaltyText(event.penalties) : '';
     const isSelected = $('.event-checkbox[data-event-id="' + event.id + '"]:checked').length > 0;
-    let penaltyDisplay = '';
+    let displayText = `<span class="event-name">${event.name}</span><span class="repeatable-badge">Repeatable</span>`;
     if (selectedCount > 0) {
       let colorClass = '';
-      if (selectedCount < Y) {
-        colorClass = 'penalty-yellow';
-      } else if (selectedCount === Y) {
+      if (selectedCount <= Y) {
         colorClass = 'penalty-green';
       } else {
         colorClass = 'penalty-red';
       }
-      penaltyDisplay = `<span class="penalty-multiplier ${colorClass}"> (${selectedCount} / ${Y}) cost penalty ${selectedCount}</span>`;
+      displayText += ` <span class="penalty-multiplier ${colorClass}">(${selectedCount}/${Y})</span>`;
+      if (selectedCount > Y) {
+        const multiplier = selectedCount;
+        const factor = event.specialFactor || 1;
+        const finalMultiplier = multiplier * factor;
+        const penaltyTexts = [];
+        if (event.penalties) {
+          for (const [category, stats] of Object.entries(event.penalties)) {
+            for (const [stat, value] of Object.entries(stats)) {
+              const multipliedValue = value * finalMultiplier;
+              penaltyTexts.push(`-${multipliedValue} ${stat}`);
+            }
+          }
+        }
+        if (penaltyTexts.length > 0) {
+          displayText += ` <span class="penalty-details">Penalties: ${penaltyTexts.join(', ')}</span>`;
+        }
+      }
     }
     return `
       <div class="event-item repeatable ${isSelected ? 'selected' : ''}">
         <label class="event-label">
           <input type="checkbox" class="event-checkbox" data-event-id="${event.id}" ${isSelected ? 'checked' : ''}>
-          <span class="event-name">${event.name}</span>
-          <span class="repeatable-badge">Repeatable</span>
+          ${displayText}
         </label>
         <div class="event-description">${generateEventDescription(event)}</div>
-        ${costInfo ? `<div class="event-cost">Cost per use: ${costInfo}</div>` : ''}
-        ${penaltyDisplay}
       </div>
     `;
   }).join('');
@@ -246,23 +276,26 @@ function buildSelectionSummaryHtml() {
 
   // Calculate total penalties with breakdown
   const numEvents = selectedEvents.length;
+  const Y = getMaxEvents();
   let totalPenalties = { innate: {}, skills: {}, possessions: {} };
   let breakdown = { innate: {}, skills: {}, possessions: {} };
 
-  selectedEvents.forEach(event => {
-    const multiplier = numEvents;
-    const factor = event.specialFactor || 1;
-    if (event.penalties) {
-      for (const [category, stats] of Object.entries(event.penalties)) {
-        for (const [stat, value] of Object.entries(stats)) {
-          if (!totalPenalties[category][stat]) totalPenalties[category][stat] = 0;
-          totalPenalties[category][stat] += value * multiplier * factor;
-          if (!breakdown[category][stat]) breakdown[category][stat] = [];
-          breakdown[category][stat].push(`${value} * ${multiplier} * ${factor}`);
+  if (numEvents > Y) {
+    selectedEvents.forEach(event => {
+      const multiplier = numEvents;
+      const factor = event.specialFactor || 1;
+      if (event.penalties) {
+        for (const [category, stats] of Object.entries(event.penalties)) {
+          for (const [stat, value] of Object.entries(stats)) {
+            if (!totalPenalties[category][stat]) totalPenalties[category][stat] = 0;
+            totalPenalties[category][stat] += value * multiplier * factor;
+            if (!breakdown[category][stat]) breakdown[category][stat] = [];
+            breakdown[category][stat].push(`${value} * ${multiplier} * ${factor}`);
+          }
         }
       }
-    }
-  });
+    });
+  }
 
   let summaryHtml = '<div class="selection-summary"><h4>Selected for Next Age-Up:</h4>';
 
