@@ -182,10 +182,10 @@ const container = $('.human-content')[0];
 let isDragging = false;
 let currentSeparator = null;
 
-// Stored panel widths for collapse/expand
-let storedLeftWidth = 20;
-let storedCenterWidth = 50;
-let storedRightWidth = 30;
+// Stored panel fr values for collapse/expand
+let storedLeftFr = 20;
+let storedCenterFr = 50;
+let storedRightFr = 30;
 
 separatorLeft.addEventListener('mousedown', function(e) {
     e.preventDefault();
@@ -206,43 +206,44 @@ separatorRight.addEventListener('mousedown', function(e) {
 function onMouseMove(e) {
     if (!isDragging) return;
     const containerRect = container.getBoundingClientRect();
+    const totalWidth = containerRect.width - 80; // Subtract separator widths (40px each)
 
     if (currentSeparator === 'left') {
-        let leftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
-        leftWidth = Math.max(20, Math.min(80, leftWidth)); // Clamp between 20% and 80%
-        let centerWidth = 100 - leftWidth - storedRightWidth;
-        let rightWidth = storedRightWidth;
+        let leftFr = ((e.clientX - containerRect.left) / totalWidth) * 100;
+        leftFr = Math.max(20, Math.min(80, leftFr)); // Clamp between 20% and 80%
+        let centerFr = 100 - leftFr - storedRightFr;
+        let rightFr = storedRightFr;
 
         // If center would be < 20%, adjust right panel
-        if (centerWidth < 20) {
-            centerWidth = 20;
-            rightWidth = 100 - leftWidth - centerWidth;
-            rightWidth = Math.max(20, rightWidth); // Ensure right doesn't go below 20%
+        if (centerFr < 20) {
+            centerFr = 20;
+            rightFr = 100 - leftFr - centerFr;
+            rightFr = Math.max(20, rightFr); // Ensure right doesn't go below 20%
         }
 
-        container.style.gridTemplateColumns = `${leftWidth}% 40px ${centerWidth}% 40px ${rightWidth}%`;
-        // Update stored widths
-        storedLeftWidth = leftWidth;
-        storedCenterWidth = centerWidth;
-        storedRightWidth = rightWidth;
+        container.style.gridTemplateColumns = `${leftFr}fr 40px ${centerFr}fr 40px ${rightFr}fr`;
+        // Update stored fr values
+        storedLeftFr = leftFr;
+        storedCenterFr = centerFr;
+        storedRightFr = rightFr;
     } else if (currentSeparator === 'right') {
-        let rightWidth = ((containerRect.right - e.clientX) / containerRect.width) * 100;
-        rightWidth = Math.max(20, Math.min(80, rightWidth)); // Clamp between 20% and 80%
-        let centerWidth = 100 - storedLeftWidth - rightWidth;
-        let leftWidth = storedLeftWidth;
+        let rightFr = ((containerRect.right - e.clientX) / totalWidth) * 100;
+        rightFr = Math.max(20, Math.min(80, rightFr)); // Clamp between 20% and 80%
+        let centerFr = 100 - storedLeftFr - rightFr;
+        let leftFr = storedLeftFr;
 
         // If center would be < 20%, adjust left panel
-        if (centerWidth < 20) {
-            centerWidth = 20;
-            leftWidth = 100 - centerWidth - rightWidth;
-            leftWidth = Math.max(20, leftWidth); // Ensure left doesn't go below 20%
+        if (centerFr < 20) {
+            centerFr = 20;
+            leftFr = 100 - centerFr - rightFr;
+            leftFr = Math.max(20, leftFr); // Ensure left doesn't go below 20%
         }
 
-        container.style.gridTemplateColumns = `${leftWidth}% 40px ${centerWidth}% 40px ${rightWidth}%`;
-        // Update stored widths
-        storedLeftWidth = leftWidth;
-        storedCenterWidth = centerWidth;
-        storedRightWidth = rightWidth;
+        container.style.gridTemplateColumns = `${leftFr}fr 40px ${centerFr}fr 40px ${rightFr}fr`;
+        // Update stored fr values
+        storedLeftFr = leftFr;
+        storedCenterFr = centerFr;
+        storedRightFr = rightFr;
     }
 }
 
@@ -255,13 +256,13 @@ function onMouseUp() {
 
 // Collapse/expand functionality
 $('#collapse-left').click(function() {
-    // Store current widths before collapsing
-    const currentGrid = container.style.gridTemplateColumns || '20% 40px 50% 40px 30%';
+    // Store current fr values before collapsing
+    const currentGrid = container.style.gridTemplateColumns || '20fr 40px 50fr 40px 30fr';
     const parts = currentGrid.split(' ');
     if (parts.length === 5) {
-        storedLeftWidth = parseFloat(parts[0]);
-        storedCenterWidth = parseFloat(parts[2]);
-        storedRightWidth = parseFloat(parts[4]);
+        storedLeftFr = parseFloat(parts[0]);
+        storedCenterFr = parseFloat(parts[2]);
+        storedRightFr = parseFloat(parts[4]);
     }
     $('.left-panel').hide();
     $('#expand-left').show();
@@ -277,13 +278,13 @@ $('#expand-left').click(function() {
 });
 
 $('#collapse-right').click(function() {
-    // Store current widths before collapsing
-    const currentGrid = container.style.gridTemplateColumns || '20% 40px 50% 40px 30%';
+    // Store current fr values before collapsing
+    const currentGrid = container.style.gridTemplateColumns || '20fr 40px 50fr 40px 30fr';
     const parts = currentGrid.split(' ');
     if (parts.length === 5) {
-        storedLeftWidth = parseFloat(parts[0]);
-        storedCenterWidth = parseFloat(parts[2]);
-        storedRightWidth = parseFloat(parts[4]);
+        storedLeftFr = parseFloat(parts[0]);
+        storedCenterFr = parseFloat(parts[2]);
+        storedRightFr = parseFloat(parts[4]);
     }
     $('.right-panel').hide();
     $('#expand-right').show();
@@ -301,21 +302,21 @@ $('#expand-right').click(function() {
 function updateGridAfterCollapse(side, action) {
     if (side === 'left' && action === 'collapse') {
         // Collapse left panel, redistribute space to center and right
-        const totalSpace = storedLeftWidth + storedCenterWidth + storedRightWidth;
-        const newCenterWidth = storedCenterWidth + (storedLeftWidth / 2);
-        const newRightWidth = storedRightWidth + (storedLeftWidth / 2);
-        container.style.gridTemplateColumns = `0px 40px ${newCenterWidth}% 40px ${newRightWidth}%`;
+        const totalFr = storedLeftFr + storedCenterFr + storedRightFr;
+        const newCenterFr = storedCenterFr + (storedLeftFr / 2);
+        const newRightFr = storedRightFr + (storedLeftFr / 2);
+        container.style.gridTemplateColumns = `0px 40px ${newCenterFr}fr 40px ${newRightFr}fr`;
     } else if (side === 'left' && action === 'expand') {
-        // Expand left panel, restore stored widths
-        container.style.gridTemplateColumns = `${storedLeftWidth}% 40px ${storedCenterWidth}% 40px ${storedRightWidth}%`;
+        // Expand left panel, restore stored fr values
+        container.style.gridTemplateColumns = `${storedLeftFr}fr 40px ${storedCenterFr}fr 40px ${storedRightFr}fr`;
     } else if (side === 'right' && action === 'collapse') {
         // Collapse right panel, redistribute space to left and center
-        const totalSpace = storedLeftWidth + storedCenterWidth + storedRightWidth;
-        const newLeftWidth = storedLeftWidth + (storedRightWidth / 2);
-        const newCenterWidth = storedCenterWidth + (storedRightWidth / 2);
-        container.style.gridTemplateColumns = `${newLeftWidth}% 40px ${newCenterWidth}% 40px 0px`;
+        const totalFr = storedLeftFr + storedCenterFr + storedRightFr;
+        const newLeftFr = storedLeftFr + (storedRightFr / 2);
+        const newCenterFr = storedCenterFr + (storedRightFr / 2);
+        container.style.gridTemplateColumns = `${newLeftFr}fr 40px ${newCenterFr}fr 40px 0px`;
     } else if (side === 'right' && action === 'expand') {
-        // Expand right panel, restore stored widths
-        container.style.gridTemplateColumns = `${storedLeftWidth}% 40px ${storedCenterWidth}% 40px ${storedRightWidth}%`;
+        // Expand right panel, restore stored fr values
+        container.style.gridTemplateColumns = `${storedLeftFr}fr 40px ${storedCenterFr}fr 40px ${storedRightFr}fr`;
     }
 }
