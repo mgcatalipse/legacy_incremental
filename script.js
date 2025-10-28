@@ -115,6 +115,15 @@ $("#gain").click(() => {
   // Age the character by 1 year
   gameState.age += 1;
 
+  // Apply health reduction for elderly
+  if (gameState.age >= 66) {
+      let healthReduction = 1;
+      if (gameState.age >= 100) {
+          healthReduction += gameState.age - 100;
+      }
+      gameState.stats.innate.health.value = Math.max(0, gameState.stats.innate.health.value - healthReduction);
+  }
+
   // Check for death
   if (checkDeath(gameState.age)) {
     gameState.isDead = true;

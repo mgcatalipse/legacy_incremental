@@ -40,9 +40,9 @@ function checkDeath(age) {
     const luckThreshold = Math.floor(luck / 5);
     const survivalChance = (luckThreshold).toFixed(0); // percentage out of 100
 
-    addLogMessage(`Luck save: Rolled ${luckRoll} (need ${luckThreshold} or lower). Survival chance: ${survivalChance}%. ${luckRoll <= luckThreshold ? 'Survived death!' : 'Failed luck save, died.'}`);
+    addLogMessage(`Luck save: Rolled ${luckRoll} (need ${luckThreshold} or lower). Survival chance: ${survivalChance}%. ${luckRoll >= luckThreshold ? 'Failed luck save, died.' : 'Survived death!'}`);
 
-    return luckRoll <= luckThreshold; // Higher luck = higher threshold = better survival chance
+    return luckRoll >= luckThreshold; // Higher luck = higher threshold = better survival chance
   }
 
   return false;

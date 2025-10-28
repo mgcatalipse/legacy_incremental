@@ -103,6 +103,8 @@ If the task was repetitive and might be needed again, I should suggest: "Would y
 
 In the end of the task, when it seems to be completed, I will update `context.md` accordingly. If the change seems significant, I will suggest to the user: "Would you like me to update memory bank to reflect these changes?" I will not suggest updates for minor changes.
 
+After having finish the task, I shall propose a commit message which reflect the modifications on the project.
+
 ## Context Window Management
 
 When the context window fills up during an extended session:
