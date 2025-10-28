@@ -209,9 +209,17 @@ function onMouseMove(e) {
 
     if (currentSeparator === 'left') {
         let leftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
-        leftWidth = Math.max(15, Math.min(35, leftWidth)); // Clamp between 15% and 35%
-        const centerWidth = 50;
-        const rightWidth = 100 - leftWidth - centerWidth;
+        leftWidth = Math.max(20, Math.min(80, leftWidth)); // Clamp between 20% and 80%
+        let centerWidth = 100 - leftWidth - storedRightWidth;
+        let rightWidth = storedRightWidth;
+
+        // If center would be < 20%, adjust right panel
+        if (centerWidth < 20) {
+            centerWidth = 20;
+            rightWidth = 100 - leftWidth - centerWidth;
+            rightWidth = Math.max(20, rightWidth); // Ensure right doesn't go below 20%
+        }
+
         container.style.gridTemplateColumns = `${leftWidth}% 40px ${centerWidth}% 40px ${rightWidth}%`;
         // Update stored widths
         storedLeftWidth = leftWidth;
@@ -219,9 +227,17 @@ function onMouseMove(e) {
         storedRightWidth = rightWidth;
     } else if (currentSeparator === 'right') {
         let rightWidth = ((containerRect.right - e.clientX) / containerRect.width) * 100;
-        rightWidth = Math.max(15, Math.min(35, rightWidth)); // Clamp between 15% and 35%
-        const centerWidth = 50;
-        const leftWidth = 100 - centerWidth - rightWidth;
+        rightWidth = Math.max(20, Math.min(80, rightWidth)); // Clamp between 20% and 80%
+        let centerWidth = 100 - storedLeftWidth - rightWidth;
+        let leftWidth = storedLeftWidth;
+
+        // If center would be < 20%, adjust left panel
+        if (centerWidth < 20) {
+            centerWidth = 20;
+            leftWidth = 100 - centerWidth - rightWidth;
+            leftWidth = Math.max(20, leftWidth); // Ensure left doesn't go below 20%
+        }
+
         container.style.gridTemplateColumns = `${leftWidth}% 40px ${centerWidth}% 40px ${rightWidth}%`;
         // Update stored widths
         storedLeftWidth = leftWidth;
