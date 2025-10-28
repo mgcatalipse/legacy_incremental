@@ -19,13 +19,14 @@ function checkDeath(age) {
   // Base death chance from age group
   let deathChance = ageGroup.deathChance;
 
-  // Health modifier: 0 health = certain death, 100 health = normal chance
+  // Health modifier: 0 health = 2x, 100 health = 1x
   const healthModifier = 1 - (health / 100);
-  deathChance *= (1 + healthModifier);
 
-  // Stress modifier: 0 stress = normal, 100 stress = 3x chance
-  const stressModifier = 1 + (stress / 100) * 2; // Up to 3x at 100 stress
-  deathChance *= stressModifier;
+  // Stress modifier: 0 stress = 1x, 100 stress = 4x chance
+  const stressModifier = 1 + (stress / 100) * 3; // Up to 4x at 100 stress
+
+  // Combined modifier with interaction for high stress + low health
+  deathChance *= (1 + healthModifier + stressModifier + healthModifier * stressModifier);
 
   // Check if death occurs
   const dies = Math.random() < deathChance;
@@ -68,13 +69,14 @@ function calculateDeathChance(age, stats = null) {
   // Base death chance from age group
   let deathChance = ageGroup.deathChance;
 
-  // Health modifier: 0 health = certain death, 100 health = normal chance
+  // Health modifier: 0 health = 2x, 100 health = 1x
   const healthModifier = 1 - (health / 100);
-  deathChance *= (1 + healthModifier);
 
-  // Stress modifier: 0 stress = normal, 100 stress = 3x chance
-  const stressModifier = 1 + (stress / 100) * 2;
-  deathChance *= stressModifier;
+  // Stress modifier: 0 stress = 1x, 100 stress = 4x chance
+  const stressModifier = 1 + (stress / 100) * 3; // Up to 4x at 100 stress
+
+  // Combined modifier with interaction for high stress + low health
+  deathChance *= (1 + healthModifier + stressModifier + healthModifier * stressModifier);
 
   return Math.min(deathChance * 100, 100); // Convert to percentage, max 100%
 }
