@@ -182,6 +182,11 @@ const container = $('.human-content')[0];
 let isDragging = false;
 let currentSeparator = null;
 
+// Stored panel widths for collapse/expand
+let storedLeftWidth = 20;
+let storedCenterWidth = 50;
+let storedRightWidth = 30;
+
 separatorLeft.addEventListener('mousedown', function(e) {
     e.preventDefault();
     isDragging = true;
@@ -208,12 +213,20 @@ function onMouseMove(e) {
         const centerWidth = 50;
         const rightWidth = 100 - leftWidth - centerWidth;
         container.style.gridTemplateColumns = `${leftWidth}% 40px ${centerWidth}% 40px ${rightWidth}%`;
+        // Update stored widths
+        storedLeftWidth = leftWidth;
+        storedCenterWidth = centerWidth;
+        storedRightWidth = rightWidth;
     } else if (currentSeparator === 'right') {
         let rightWidth = ((containerRect.right - e.clientX) / containerRect.width) * 100;
         rightWidth = Math.max(15, Math.min(35, rightWidth)); // Clamp between 15% and 35%
         const centerWidth = 50;
         const leftWidth = 100 - centerWidth - rightWidth;
         container.style.gridTemplateColumns = `${leftWidth}% 40px ${centerWidth}% 40px ${rightWidth}%`;
+        // Update stored widths
+        storedLeftWidth = leftWidth;
+        storedCenterWidth = centerWidth;
+        storedRightWidth = rightWidth;
     }
 }
 
@@ -226,6 +239,14 @@ function onMouseUp() {
 
 // Collapse/expand functionality
 $('#collapse-left').click(function() {
+    // Store current widths before collapsing
+    const currentGrid = container.style.gridTemplateColumns || '20% 40px 50% 40px 30%';
+    const parts = currentGrid.split(' ');
+    if (parts.length === 5) {
+        storedLeftWidth = parseFloat(parts[0]);
+        storedCenterWidth = parseFloat(parts[2]);
+        storedRightWidth = parseFloat(parts[4]);
+    }
     $('.left-panel').hide();
     $('#expand-left').show();
     $('#collapse-left').hide();
@@ -240,6 +261,14 @@ $('#expand-left').click(function() {
 });
 
 $('#collapse-right').click(function() {
+    // Store current widths before collapsing
+    const currentGrid = container.style.gridTemplateColumns || '20% 40px 50% 40px 30%';
+    const parts = currentGrid.split(' ');
+    if (parts.length === 5) {
+        storedLeftWidth = parseFloat(parts[0]);
+        storedCenterWidth = parseFloat(parts[2]);
+        storedRightWidth = parseFloat(parts[4]);
+    }
     $('.right-panel').hide();
     $('#expand-right').show();
     $('#collapse-right').hide();
@@ -254,17 +283,23 @@ $('#expand-right').click(function() {
 });
 
 function updateGridAfterCollapse(side, action) {
-    const currentGrid = container.style.gridTemplateColumns || '1fr 40px 1fr 40px 1fr';
-    const parts = currentGrid.split(' ');
-    if (parts.length !== 5) return;
-
     if (side === 'left' && action === 'collapse') {
-        container.style.gridTemplateColumns = `0px 40px ${parts[2]} 40px ${parts[4]}`;
+        // Collapse left panel, redistribute space to center and right
+        const totalSpace = storedLeftWidth + storedCenterWidth + storedRightWidth;
+        const newCenterWidth = storedCenterWidth + (storedLeftWidth / 2);
+        const newRightWidth = storedRightWidth + (storedLeftWidth / 2);
+        container.style.gridTemplateColumns = `0px 40px ${newCenterWidth}% 40px ${newRightWidth}%`;
     } else if (side === 'left' && action === 'expand') {
-        container.style.gridTemplateColumns = `20% 40px 40% 40px 40%`;
+        // Expand left panel, restore stored widths
+        container.style.gridTemplateColumns = `${storedLeftWidth}% 40px ${storedCenterWidth}% 40px ${storedRightWidth}%`;
     } else if (side === 'right' && action === 'collapse') {
-        container.style.gridTemplateColumns = `${parts[0]} 40px ${parts[2]} 40px 0px`;
+        // Collapse right panel, redistribute space to left and center
+        const totalSpace = storedLeftWidth + storedCenterWidth + storedRightWidth;
+        const newLeftWidth = storedLeftWidth + (storedRightWidth / 2);
+        const newCenterWidth = storedCenterWidth + (storedRightWidth / 2);
+        container.style.gridTemplateColumns = `${newLeftWidth}% 40px ${newCenterWidth}% 40px 0px`;
     } else if (side === 'right' && action === 'expand') {
-        container.style.gridTemplateColumns = `20% 40px 40% 40px 40%`;
+        // Expand right panel, restore stored widths
+        container.style.gridTemplateColumns = `${storedLeftWidth}% 40px ${storedCenterWidth}% 40px ${storedRightWidth}%`;
     }
 }
