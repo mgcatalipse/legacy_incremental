@@ -78,4 +78,31 @@ function calculateDeathChance(age, stats = null) {
   return Math.min(deathChance * 100, 100); // Convert to percentage, max 100%
 }
 
+// Probability calculation functions for family events
+function calculateWifeFindingProbability() {
+  const stats = gameState.stats;
+  const baseProbability = 0.1; // 10% base chance
+  
+  // Modify probability based on stats
+  const beautyModifier = stats.innate.beauty.value / 100; // 0-2x multiplier
+  const charismaModifier = stats.innate.charisma.value / 100; // 0-2x multiplier
+  const healthModifier = Math.max(0.5, stats.innate.health.value / 100); // Minimum 0.5x
+  
+  const finalProbability = baseProbability * beautyModifier * charismaModifier * healthModifier;
+  return Math.min(0.8, finalProbability); // Cap at 80%
+}
+
+function calculateChildBirthProbability() {
+  const stats = gameState.stats;
+  const baseProbability = 0.3; // 30% base chance
+  
+  // Modify probability based on stats
+  const healthModifier = stats.innate.health.value / 100; // 0-2x multiplier
+  const luckModifier = stats.innate.luck.value / 100; // 0-2x multiplier
+  const stressModifier = Math.max(0.1, (100 - stats.innate.stress.value) / 100); // Lower stress = higher chance
+  
+  const finalProbability = baseProbability * healthModifier * luckModifier * stressModifier;
+  return Math.min(0.9, finalProbability); // Cap at 90%
+}
+
 // No export, functions are global

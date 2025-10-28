@@ -178,6 +178,47 @@ const LIFE_EVENTS = [
     specialFactor: 1.0
   },
 
+  // ADULT EVENTS (20-64 years) - Family Events
+  {
+    id: "find_wife",
+    name: "Find a Wife",
+    ageRange: { min: 16, max: 40 },
+    repeatable: false,
+    description: "Look for potential partners. Success depends on your beauty and charisma stats.",
+    effects: {},
+    specialRequirements: {
+      hasNoWife: true
+    }
+  },
+  {
+    id: "wedding",
+    name: "Wedding",
+    ageRange: { min: 16, max: 50 },
+    repeatable: false,
+    description: "Get married to your selected partner. +{bonus} comfort, -{penalty} money",
+    effects: {
+      possessions: { comfort: 10 }
+    },
+    penalties: {
+      possessions: { money: -1000 }
+    },
+    specialRequirements: {
+      hasWife: true,
+      notMarried: true
+    }
+  },
+  {
+    id: "try_for_children",
+    name: "Try for Children",
+    ageRange: { min: 18, max: 45 },
+    repeatable: true,
+    description: "Try to have children with your spouse. Success depends on health and luck.",
+    effects: {},
+    specialRequirements: {
+      isMarried: true
+    }
+  },
+
   // ELDER EVENTS (65+ years)
   {
     id: "retirement",

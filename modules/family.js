@@ -64,10 +64,33 @@ function createChild(wife) {
   return child;
 }
 
+// Check if player meets special requirements for an event
+function checkSpecialRequirements(event) {
+  switch(event.id) {
+    case "find_wife":
+      return !gameState.selectedWife;
+    case "wedding":
+      return gameState.selectedWife && !gameState.isMarried;
+    case "try_for_children":
+      return gameState.isMarried;
+    default:
+      return true;
+  }
+}
+
+// Process wife finding result
+function processWifeFindingResult(success) {
+  if (success) {
+    const wives = generateWives();
+    gameState.wives = wives;
+    gameState.showWifeSelection = true;
+  } else {
+    alert("No suitable partners found. Try improving your beauty and charisma stats.");
+  }
+}
+
 // Show wife selection UI
 function showWifeSelection() {
-  if (gameState.age < 13 || gameState.age > 64) return;
-
   const wives = generateWives();
   gameState.wives = wives;
 
@@ -101,15 +124,11 @@ function showWifeSelection() {
       $('#wife-selection').remove();
       gameState.showWifeSelection = false;
 
-      // Create child
-      const child = createChild(selectedWife);
-      gameState.children.push(child);
-
-      alert(`Child created! ${child.name} born with mixed stats from you and ${selectedWife.name}`);
+      alert(`You've found a partner: ${selectedWife.name}! You can now marry her.`);
       updateUI();
       updateEventsList();
     } else {
-      alert('Not enough money to marry this person!');
+      alert('Not enough money to court this person!');
     }
   });
 }
@@ -151,6 +170,7 @@ function showChildSelection() {
     gameState.age = selectedChild.age;
     gameState.children = [];
     gameState.selectedWife = null;
+    gameState.isMarried = false;
     gameState.showChildSelection = false;
 
     $('#child-selection').remove();
@@ -164,6 +184,7 @@ function showChildSelection() {
 function resetForNewLife() {
   gameState.age = 0;
   gameState.isDead = false;
+  gameState.isMarried = false;
   gameState.completedEvents.clear();
   gameState.stats = JSON.parse(JSON.stringify(STATS));
   gameState.children = [];

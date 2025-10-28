@@ -27,8 +27,23 @@ function getAvailableEvents() {
   return LIFE_EVENTS.filter(event => {
     const inAgeRange = gameState.age >= event.ageRange.min && gameState.age <= event.ageRange.max;
     const isRepeatableOrNotCompleted = event.repeatable || !gameState.completedEvents.has(event.id);
-    return inAgeRange && isRepeatableOrNotCompleted;
+    const meetsSpecialRequirements = !event.specialRequirements || checkSpecialRequirements(event);
+    return inAgeRange && isRepeatableOrNotCompleted && meetsSpecialRequirements;
   });
+}
+
+// Check if player meets special requirements for an event
+function checkSpecialRequirements(event) {
+  switch(event.id) {
+    case "find_wife":
+      return !gameState.selectedWife;
+    case "wedding":
+      return gameState.selectedWife && !gameState.isMarried;
+    case "try_for_children":
+      return gameState.isMarried;
+    default:
+      return true;
+  }
 }
 
 // Calculate stat previews from selected events and penalties
@@ -228,6 +243,7 @@ function buildRepeatableEventsHtml(events) {
   const Y = getMaxEvents();
   return events.map(event => {
     const isSelected = $('.event-checkbox[data-event-id="' + event.id + '"]:checked').length > 0;
+    const isPreserved = gameState.preservedSelections.has(event.id);
     let displayText = `<span class="event-name">${event.name}</span><span class="repeatable-badge">Repeatable</span>`;
     if (selectedCount > 0) {
       let colorClass = '';
@@ -258,7 +274,7 @@ function buildRepeatableEventsHtml(events) {
     return `
       <div class="event-item repeatable ${isSelected ? 'selected' : ''}">
         <label class="event-label">
-          <input type="checkbox" class="event-checkbox" data-event-id="${event.id}" ${isSelected ? 'checked' : ''}>
+          <input type="checkbox" class="event-checkbox" data-event-id="${event.id}" ${(isSelected || isPreserved) ? 'checked' : ''}>
           ${displayText}
         </label>
         <div class="event-description">${generateEventDescription(event)}</div>
@@ -380,6 +396,9 @@ function updateEventsList() {
   if (repeatableEvents.length > 0) {
     eventsList.append(buildRepeatableEventsHtml(repeatableEvents));
   }
+
+  // Clear preserved selections after rendering
+  gameState.preservedSelections.clear();
 }
 
 // Invert effects for removal

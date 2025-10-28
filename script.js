@@ -7,6 +7,7 @@ const gameState = {
   prestigeActive: false,
   startTime: null,
   isDead: false,
+  isMarried: false,
   stats: JSON.parse(JSON.stringify(STATS)), // Deep copy
   completedEvents: new Set(),
   availableEvents: [],
@@ -14,7 +15,8 @@ const gameState = {
   wives: [],
   selectedWife: null,
   showWifeSelection: false,
-  showChildSelection: false
+  showChildSelection: false,
+  preservedSelections: new Set()
 };
 
 
@@ -32,6 +34,43 @@ $(".tab-btn").click(function () {
 });
 
 // Multiplier buttons removed
+
+// Process special events with probability calculations
+function processSpecialEvents() {
+  const selectedEvents = getSelectedEvents();
+  
+  selectedEvents.forEach(event => {
+    switch(event.id) {
+      case "find_wife":
+        const wifeProbability = calculateWifeFindingProbability();
+        if (Math.random() < wifeProbability) {
+          processWifeFindingResult(true);
+        } else {
+          processWifeFindingResult(false);
+        }
+        break;
+      case "wedding":
+        if (gameState.selectedWife && !gameState.isMarried) {
+          gameState.isMarried = true;
+          applyStatEffects(event.effects);
+          applyStatEffects(event.penalties);
+        }
+        break;
+      case "try_for_children":
+        if (gameState.isMarried) {
+          const childProbability = calculateChildBirthProbability();
+          if (Math.random() < childProbability) {
+            const child = createChild(gameState.selectedWife);
+            gameState.children.push(child);
+            alert(`Child born! ${child.name} has inherited mixed stats from both parents.`);
+          } else {
+            alert("No child conceived this time. Try again next year.");
+          }
+        }
+        break;
+    }
+  });
+}
 
 $("#gain").click(() => {
   if (gameState.isDead) return;
@@ -54,6 +93,22 @@ $("#gain").click(() => {
   const totalPenalties = calculateTotalPenalties();
   applyStatEffects(totalPenalties);
 
+  // Process special events
+  processSpecialEvents();
+
+  // Preserve selections for repeatable events that will be available next year
+  gameState.preservedSelections.clear();
+  selectedEvents.forEach(event => {
+    if (event.repeatable) {
+      // Check if this event will be available next year
+      const nextYear = gameState.age + 1;
+      const willBeAvailable = nextYear >= event.ageRange.min && nextYear <= event.ageRange.max;
+      if (willBeAvailable) {
+        gameState.preservedSelections.add(event.id);
+      }
+    }
+  });
+
   // Clear all selections after applying effects
   $('.event-checkbox:checked').prop('checked', false);
 
@@ -64,11 +119,6 @@ $("#gain").click(() => {
   if (checkDeath(gameState.age)) {
     gameState.isDead = true;
     return;
-  }
-
-  // Check for wife selection (teen to adult)
-  if (gameState.age >= 13 && gameState.age <= 30 && !gameState.selectedWife && Math.random() < 0.3) {
-    gameState.showWifeSelection = true;
   }
 
   // Check for retirement/child selection (elder)
@@ -89,6 +139,7 @@ $("#prestige").click(() => {
     gameState.prestigeActive = true;
     gameState.age = 0; // Reset to baby
     gameState.isDead = false;
+    gameState.isMarried = false;
     gameState.prestigeUnlocked = false;
     gameState.completedEvents.clear();
     gameState.stats = JSON.parse(JSON.stringify(STATS)); // Reset stats
