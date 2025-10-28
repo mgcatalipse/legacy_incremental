@@ -84,8 +84,8 @@ function updateStatsDisplay() {
   }
   statsHtml += '</div></div>';
 
-  // Update the left side with stats instead of just age
-  $('.left-side').html(`
+  // Update the left panel with stats instead of just age
+  $('.left-panel').html(`
     <div id="age-display">
       <h2 id="age-title">${getCurrentAgeGroup(gameState.age).name}</h2>
       <div id="age-points">Age: ${gameState.age}</div>

@@ -29,14 +29,19 @@ function checkDeath(age) {
   deathChance *= (1 + healthModifier + stressModifier + healthModifier * stressModifier);
 
   // Check if death occurs
-  const dies = Math.random() < deathChance;
+  const roll = Math.random();
+  const dies = roll < deathChance;
+
+  addLogMessage(`Death roll: ${(roll * 100).toFixed(2)}% vs ${(deathChance * 100).toFixed(2)}% chance. ${dies ? 'Death triggered.' : 'Survived.'}`);
 
   if (dies) {
     // Luck roll: 1d100 vs luck/5 to survive
     const luckRoll = Math.floor(Math.random() * 100) + 1;
     const luckThreshold = Math.floor(luck / 5);
+    const survivalChance = (luckThreshold).toFixed(0); // percentage out of 100
 
-    addLogMessage(`Death roll: ${luckRoll} vs ${luckThreshold} (luck threshold). ${luckRoll >= luckThreshold ? 'Survived!' : 'Died.'}`);
+    addLogMessage(`Luck save: Rolled ${luckRoll} (need ${luckThreshold} or higher). Survival chance: ${survivalChance}%. ${luckRoll >= luckThreshold ? 'Survived death!' : 'Failed luck save, died.'}`);
+
     return luckRoll >= luckThreshold; // Higher luck = lower threshold = better survival chance
   }
 

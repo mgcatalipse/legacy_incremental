@@ -166,16 +166,28 @@ $(document).on('change', '.event-checkbox', function() {
  });
 
 // Resizable separator functionality
-const separator = $('.vertical-separator')[0];
-const leftSide = $('.left-side')[0];
-const rightSide = $('.right-side')[0];
+const separatorLeft = $('.separator-left')[0];
+const separatorRight = $('.separator-right')[0];
+const leftPanel = $('.left-panel')[0];
+const centerPanel = $('.center-panel')[0];
+const rightPanel = $('.right-panel')[0];
 const container = $('.human-content')[0];
 
 let isDragging = false;
+let currentSeparator = null;
 
-separator.addEventListener('mousedown', function(e) {
+separatorLeft.addEventListener('mousedown', function(e) {
     e.preventDefault();
     isDragging = true;
+    currentSeparator = 'left';
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+});
+
+separatorRight.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    isDragging = true;
+    currentSeparator = 'right';
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
 });
@@ -183,13 +195,70 @@ separator.addEventListener('mousedown', function(e) {
 function onMouseMove(e) {
     if (!isDragging) return;
     const containerRect = container.getBoundingClientRect();
-    let leftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
-    leftWidth = Math.max(20, Math.min(80, leftWidth)); // Clamp between 20% and 80%
-    container.style.gridTemplateColumns = `${leftWidth}% 10px ${100 - leftWidth}%`;
+
+    if (currentSeparator === 'left') {
+        let leftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+        leftWidth = Math.max(15, Math.min(35, leftWidth)); // Clamp between 15% and 35%
+        const centerWidth = 50 - leftWidth;
+        const rightWidth = 100 - leftWidth - centerWidth;
+        container.style.gridTemplateColumns = `${leftWidth}% 40px ${centerWidth}% 40px ${rightWidth}%`;
+    } else if (currentSeparator === 'right') {
+        let rightWidth = ((containerRect.right - e.clientX) / containerRect.width) * 100;
+        rightWidth = Math.max(15, Math.min(35, rightWidth)); // Clamp between 15% and 35%
+        const centerWidth = 50 - rightWidth;
+        const leftWidth = 100 - centerWidth - rightWidth;
+        container.style.gridTemplateColumns = `${leftWidth}% 40px ${centerWidth}% 40px ${rightWidth}%`;
+    }
 }
 
 function onMouseUp() {
     isDragging = false;
+    currentSeparator = null;
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
+}
+
+// Collapse/expand functionality
+$('#collapse-left').click(function() {
+    $('.left-panel').hide();
+    $('#expand-left').show();
+    $('#collapse-left').hide();
+    updateGridAfterCollapse('left', 'collapse');
+});
+
+$('#expand-left').click(function() {
+    $('.left-panel').show();
+    $('#expand-left').hide();
+    $('#collapse-left').show();
+    updateGridAfterCollapse('left', 'expand');
+});
+
+$('#collapse-right').click(function() {
+    $('.right-panel').hide();
+    $('#expand-right').show();
+    $('#collapse-right').hide();
+    updateGridAfterCollapse('right', 'collapse');
+});
+
+$('#expand-right').click(function() {
+    $('.right-panel').show();
+    $('#expand-right').hide();
+    $('#collapse-right').show();
+    updateGridAfterCollapse('right', 'expand');
+});
+
+function updateGridAfterCollapse(side, action) {
+    const currentGrid = container.style.gridTemplateColumns || '1fr 40px 1fr 40px 1fr';
+    const parts = currentGrid.split(' ');
+    if (parts.length !== 5) return;
+
+    if (side === 'left' && action === 'collapse') {
+        container.style.gridTemplateColumns = `0px 40px ${parts[2]} 40px ${parts[4]}`;
+    } else if (side === 'left' && action === 'expand') {
+        container.style.gridTemplateColumns = `20% 40px 40% 40px 40%`;
+    } else if (side === 'right' && action === 'collapse') {
+        container.style.gridTemplateColumns = `${parts[0]} 40px ${parts[2]} 40px 0px`;
+    } else if (side === 'right' && action === 'expand') {
+        container.style.gridTemplateColumns = `20% 40px 40% 40px 40%`;
+    }
 }

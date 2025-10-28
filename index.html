@@ -32,18 +32,27 @@
   <div id="tab-content">
     <div class="tab-pane active" id="human">
       <div class="human-content">
-        <div class="left-side">
+        <div class="left-panel">
           <div id="age-display">
             <h2 id="age-title">Infant</h2>
             <div id="age-points">Age: 0</div>
           </div>
         </div>
-        <div class="vertical-separator"></div>
-        <div class="right-side">
+        <div class="separator-left">
+          <div class="collapse-btn" id="collapse-left"><</div>
+          <div class="collapse-btn" id="expand-left">></div>
+        </div>
+        <div class="center-panel">
           <div id="events-container">
             <h3>Life Events</h3>
             <div id="events-list"></div>
           </div>
+        </div>
+        <div class="separator-right">
+          <div class="collapse-btn" id="collapse-right">></div>
+          <div class="collapse-btn" id="expand-right"><</div>
+        </div>
+        <div class="right-panel">
           <div id="log-panel">
             <h3>Log</h3>
             <div id="log-messages"></div>

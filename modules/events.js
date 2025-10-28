@@ -359,13 +359,18 @@ function updateEventsList() {
 
   if (eventsContainer.length === 0) {
     // Create events container if it doesn't exist
-    $('.right-side').empty().append(`
+    $('.center-panel').empty().append(`
       <div id="events-container">
         <h3>Life Events</h3>
         <div id="events-list"></div>
       </div>
     `);
   }
+
+  // Update header with selectable count
+  const Y = getMaxEvents();
+  const headerText = `Life Events (${availableEvents.length} available, ${Y} selectable without penalties)`;
+  $('#events-container h3').text(headerText);
 
   const eventsList = $('#events-list');
   eventsList.empty();
