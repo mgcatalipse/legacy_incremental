@@ -85,7 +85,7 @@ function processWifeFindingResult(success) {
     gameState.wives = wives;
     gameState.showWifeSelection = true;
   } else {
-    alert("No suitable partners found. Try improving your beauty and charisma stats.");
+    addLogMessage("No suitable partners found. Try improving your beauty and charisma stats.");
   }
 }
 
@@ -124,11 +124,11 @@ function showWifeSelection() {
       $('#wife-selection').remove();
       gameState.showWifeSelection = false;
 
-      alert(`You've found a partner: ${selectedWife.name}! You can now marry her.`);
+      addLogMessage(`You've found a partner: ${selectedWife.name}! You can now marry her.`);
       updateUI();
       updateEventsList();
     } else {
-      alert('Not enough money to court this person!');
+      addLogMessage('Not enough money to court this person!');
     }
   });
 }
@@ -136,7 +136,7 @@ function showWifeSelection() {
 // Show child selection UI (for retirement)
 function showChildSelection() {
   if (gameState.children.length === 0) {
-    alert('No children to choose from. Continue as new character.');
+    addLogMessage('No children to choose from. Continue as new character.');
     resetForNewLife();
     return;
   }
@@ -174,7 +174,7 @@ function showChildSelection() {
     gameState.showChildSelection = false;
 
     $('#child-selection').remove();
-    alert(`Now playing as ${selectedChild.name}!`);
+    addLogMessage(`Now playing as ${selectedChild.name}!`);
     updateUI();
     updateEventsList();
   });

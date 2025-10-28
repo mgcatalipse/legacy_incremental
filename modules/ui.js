@@ -156,6 +156,20 @@ function handleSpecialUIStates() {
   }
 }
 
+function addLogMessage(message) {
+  const logMessages = $('#log-messages');
+  const timestamp = new Date().toLocaleTimeString();
+  const logEntry = `<div class="log-entry">[${timestamp}] ${message}</div>`;
+  logMessages.append(logEntry);
+  // Keep only last 50 messages
+  const entries = logMessages.children();
+  if (entries.length > 50) {
+    entries.first().remove();
+  }
+  // Auto-scroll to bottom
+  logMessages.scrollTop(logMessages[0].scrollHeight);
+}
+
 function updateUI() {
   updateAgeDisplay();
   updateStatsDisplay();

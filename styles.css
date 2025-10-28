@@ -423,6 +423,39 @@ body {
   padding-bottom: 100px; /* Add padding to account for fixed button */
 }
 
+/* Log Panel Styling */
+#log-panel {
+  margin-top: 20px;
+}
+
+#log-panel h3 {
+  font-size: 1.3em;
+  margin-bottom: 15px;
+  color: #3498db;
+  text-align: center;
+}
+
+#log-messages {
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  padding: 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+.log-entry {
+  margin-bottom: 5px;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
 /* Penalty multiplier colors */
 .penalty-yellow {
   color: #f39c12;

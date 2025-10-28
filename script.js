@@ -62,9 +62,9 @@ function processSpecialEvents() {
           if (Math.random() < childProbability) {
             const child = createChild(gameState.selectedWife);
             gameState.children.push(child);
-            alert(`Child born! ${child.name} has inherited mixed stats from both parents.`);
+            addLogMessage(`Child born! ${child.name} has inherited mixed stats from both parents.`);
           } else {
-            alert("No child conceived this time. Try again next year.");
+            addLogMessage("No child conceived this time. Try again next year.");
           }
         }
         break;
@@ -118,8 +118,11 @@ $("#gain").click(() => {
   // Check for death
   if (checkDeath(gameState.age)) {
     gameState.isDead = true;
+    addLogMessage(`Aged up to ${gameState.age} years old. Unfortunately, you have died.`);
     return;
   }
+
+  addLogMessage(`Aged up to ${gameState.age} years old.`);
 
   // Check for retirement/child selection (elder)
   if (gameState.age >= 65 && gameState.children.length > 0) {

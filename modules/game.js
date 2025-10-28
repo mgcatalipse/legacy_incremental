@@ -35,6 +35,7 @@ function checkDeath(age) {
     const luckRoll = Math.floor(Math.random() * 100) + 1;
     const luckThreshold = Math.floor(luck / 5);
 
+    addLogMessage(`Death roll: ${luckRoll} vs ${luckThreshold} (luck threshold). ${luckRoll >= luckThreshold ? 'Survived!' : 'Died.'}`);
     return luckRoll >= luckThreshold; // Higher luck = lower threshold = better survival chance
   }
 
