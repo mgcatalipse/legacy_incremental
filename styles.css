@@ -106,7 +106,6 @@ h1 {
   text-align: center;
   overflow-y: auto; /* Make left panel scrollable */
   max-height: 100%;
-  min-width: 200px;
 }
 
 .center-panel {
@@ -116,7 +115,6 @@ h1 {
   border-radius: 10px;
   overflow-y: auto; /* Make center panel scrollable */
   max-height: 100%;
-  min-width: 300px;
 }
 
 .right-panel {
@@ -130,7 +128,6 @@ h1 {
   justify-content: flex-start;
   overflow-y: auto; /* Make right panel scrollable */
   max-height: 100%;
-  min-width: 200px;
 }
 
 .separator-left, .separator-right {
