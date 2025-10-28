@@ -167,14 +167,14 @@ function addLogMessage(message) {
   const logMessages = $('#log-messages');
   const timestamp = new Date().toLocaleTimeString();
   const logEntry = `<div class="log-entry">[${timestamp}] ${message}</div>`;
-  logMessages.append(logEntry);
-  // Keep only last 50 messages
+  logMessages.prepend(logEntry);
+  // Keep only last 100 messages
   const entries = logMessages.children();
-  if (entries.length > 50) {
-    entries.first().remove();
+  if (entries.length > 100) {
+    entries.last().remove();
   }
-  // Auto-scroll to bottom
-  logMessages.scrollTop(logMessages[0].scrollHeight);
+  // Auto-scroll to top (since newest are at top)
+  logMessages.scrollTop(0);
 }
 
 function updateUI() {
