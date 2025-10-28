@@ -183,7 +183,7 @@ const LIFE_EVENTS = [
     id: "find_wife",
     name: "Find a Wife",
     ageRange: { min: 16, max: 40 },
-    repeatable: false,
+    repeatable: true,
     description: "Look for potential partners. Success depends on your beauty and charisma stats.",
     effects: {},
     specialRequirements: {
