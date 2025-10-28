@@ -4,5 +4,5 @@ const AGE_GROUPS = {
   CHILD: { min: 3, max: 12, deathChance: 0.005, name: "Child" },
   TEENAGE: { min: 13, max: 19, deathChance: 0.003, name: "Teenager" },
   ADULT: { min: 20, max: 64, deathChance: 0.001, name: "Adult" },
-  ELDER: { min: 65, max: 200, deathChance: 0.05, name: "Elder" }
+  ELDER: { min: 65, max: 200, deathChance: 0.01, name: "Elder" }
 };

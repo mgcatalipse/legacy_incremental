@@ -89,50 +89,6 @@ To execute Memory Bank update, I will:
 
 Note: When triggered by **update memory bank**, I MUST review every memory bank file, even if some don't require updates. Focus particularly on context.md as it tracks current state.
 
-### Add Task
-
-When user completes a repetitive task (like adding support for a new model version) and wants to document it for future reference, they can request: **add task** or **store this as a task**.
-
-This workflow is designed for repetitive tasks that follow similar patterns and require editing the same files. Examples include:
-- Adding support for new AI model versions
-- Implementing new API endpoints following established patterns
-- Adding new features that follow existing architecture
-
-Tasks are stored in the file `tasks.md` in the memory bank folder. The file is optional and can be empty. The file can store many tasks. 
-
-To execute Add Task workflow:
-
-1. Create or update `tasks.md` in the memory bank folder
-2. Document the task with:
-   - Task name and description
-   - Files that need to be modified
-   - Step-by-step workflow followed
-   - Important considerations or gotchas
-   - Example of the completed implementation
-3. Include any context that was discovered during task execution but wasn't previously documented
-
-Example task entry:
-```markdown
-## Add New Model Support
-**Last performed:** [date]
-**Files to modify:**
-- `/providers/gemini.md` - Add model to documentation
-- `/src/providers/gemini-config.ts` - Add model configuration
-- `/src/constants/models.ts` - Add to model list
-- `/tests/providers/gemini.test.ts` - Add test cases
-
-**Steps:**
-1. Add model configuration with proper token limits
-2. Update documentation with model capabilities
-3. Add to constants file for UI display
-4. Write tests for new model configuration
-
-**Important notes:**
-- Check Google's documentation for exact token limits
-- Ensure backward compatibility with existing configurations
-- Test with actual API calls before committing
-```
-
 ### Regular Task Execution
 
 In the beginning of EVERY task I MUST read ALL memory bank files - this is not optional. 

@@ -87,6 +87,4 @@ The application loads files in a specific order to ensure dependencies are met:
 - **Deep copying**: Prevents reference issues when resetting state
 
 ### Testing Approach
-- **Test directory exists but is empty**: No tests currently implemented
-- **Manual testing**: Based on UI interactions and game state verification
-- **Requirements document**: Provides testable specifications for implementation
+- **Manual testing**: Prepare a test scenario, display it and ask user to execute it, then ask if test is sucess, faillure or limitation
