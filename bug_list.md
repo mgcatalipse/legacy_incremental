@@ -3,5 +3,4 @@ After correcting a bug, ask the user to verify is the bug has been corrected, th
 
 # Bugs:
 
-
 # Improvements

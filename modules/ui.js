@@ -149,6 +149,13 @@ function handleSpecialUIStates() {
     showChildSelection();
   }
 
+  // Show/hide select child button
+  if (gameState.children.length > 0 && gameState.age >= 18) {
+    $('#select-child').show();
+  } else {
+    $('#select-child').hide();
+  }
+
   // Unlock prestige at age 18
   if (gameState.age >= 18 && !gameState.prestigeUnlocked) {
     $("#prestige").removeClass("disabled").text("Prestige (Available!)");

@@ -156,9 +156,9 @@ function showChildSelection() {
       </div>
     `;
   });
-  childHtml += '</div>';
+  childHtml += '<button id="cancel-child-selection" class="button">Cancel</button></div>';
 
-  $('.right-side').append(childHtml);
+  $('.right-panel').append(childHtml);
 
   // Handle child selection
   $('.select-child-btn').click(function() {
@@ -177,6 +177,13 @@ function showChildSelection() {
     addLogMessage(`Now playing as ${selectedChild.name}!`);
     updateUI();
     updateEventsList();
+  });
+
+  // Handle cancel button
+  $('#cancel-child-selection').click(function() {
+    gameState.showChildSelection = false;
+    $('#child-selection').remove();
+    updateUI();
   });
 }
 

@@ -136,6 +136,12 @@ $("#gain").click(() => {
 });
 
 
+$("#select-child").click(() => {
+  if (gameState.children.length === 0) return;
+  gameState.showChildSelection = true;
+  updateUI();
+});
+
 $("#prestige").click(() => {
   if (!gameState.prestigeUnlocked || gameState.age < 18) return;
   if (!gameState.prestigeActive) {
@@ -199,13 +205,13 @@ function onMouseMove(e) {
     if (currentSeparator === 'left') {
         let leftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
         leftWidth = Math.max(15, Math.min(35, leftWidth)); // Clamp between 15% and 35%
-        const centerWidth = 50 - leftWidth;
+        const centerWidth = 50;
         const rightWidth = 100 - leftWidth - centerWidth;
         container.style.gridTemplateColumns = `${leftWidth}% 40px ${centerWidth}% 40px ${rightWidth}%`;
     } else if (currentSeparator === 'right') {
         let rightWidth = ((containerRect.right - e.clientX) / containerRect.width) * 100;
         rightWidth = Math.max(15, Math.min(35, rightWidth)); // Clamp between 15% and 35%
-        const centerWidth = 50 - rightWidth;
+        const centerWidth = 50;
         const leftWidth = 100 - centerWidth - rightWidth;
         container.style.gridTemplateColumns = `${leftWidth}% 40px ${centerWidth}% 40px ${rightWidth}%`;
     }
