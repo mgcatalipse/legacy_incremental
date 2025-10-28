@@ -30,7 +30,8 @@ legacy_incremental/
 ├── styles.css              # Game styles
 ├── jquery-3.7.1.min.js    # jQuery library
 ├── README.md               # Project documentation
-└── requirements.md         # Detailed requirements
+├── bug_list.md             # Active bug tracking
+└── .gitignore              # Git ignore rules
 ```
 
 ### File Loading Order

@@ -369,8 +369,10 @@ function updateEventsList() {
 
   // Update header with selectable count
   const Y = getMaxEvents();
-  const headerText = `Life Events (${availableEvents.length} available, ${Y} selectable without penalties)`;
-  $('#events-container h3').text(headerText);
+  const selectedCount = getSelectedEvents().length;
+  const colorClass = selectedCount > Y ? 'penalty-red' : 'penalty-green';
+  const headerText = `Life Events (${availableEvents.length} available, ${selectedCount}/${Y} selectable without penalties)`;
+  $('#events-container h3').html(headerText.replace(`${selectedCount}/${Y}`, `<span class="${colorClass}">${selectedCount}/${Y}</span>`));
 
   const eventsList = $('#events-list');
   eventsList.empty();
