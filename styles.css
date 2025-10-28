@@ -477,6 +477,9 @@ body {
 /* Log Panel Styling */
 #log-panel {
   margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 #log-panel h3 {
@@ -484,10 +487,11 @@ body {
   margin-bottom: 15px;
   color: #3498db;
   text-align: center;
+  flex-shrink: 0;
 }
 
 #log-messages {
-  max-height: 200px;
+  flex: 1;
   overflow-y: auto;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 5px;
