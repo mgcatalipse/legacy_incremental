@@ -9,6 +9,17 @@ function getCurrentAgeGroup(age) {
   return AGE_GROUPS.ELDER; // Default to elder for ages over 200
 }
 
+// Helper function to calculate death chance modifiers
+function calculateDeathModifiers(health, stress) {
+  // Health modifier: 0 health = 100% death (2x multiplier), 100 health = 1x
+  const healthModifier = 1 - (health / 100);
+
+  // Stress modifier: 0 stress = 1x, 100 stress = 2x, 200 stress = 4x
+  const stressModifier = 1 + (stress / 100); // 1x at 0, 2x at 100, 4x at 200
+
+  return { healthModifier, stressModifier };
+}
+
 // Enhanced death check with health, stress, and luck
 function checkDeath(age) {
   const ageGroup = getCurrentAgeGroup(age);
@@ -19,11 +30,7 @@ function checkDeath(age) {
   // Base death chance from age group
   let deathChance = ageGroup.deathChance;
 
-  // Health modifier: 0 health = 2x, 100 health = 1x
-  const healthModifier = 1 - (health / 100);
-
-  // Stress modifier: 0 stress = 1x, 100 stress = 4x chance
-  const stressModifier = 1 + (stress / 100) * 3; // Up to 4x at 100 stress
+  const { healthModifier, stressModifier } = calculateDeathModifiers(health, stress);
 
   // Combined modifier with interaction for high stress + low health
   deathChance *= (1 + healthModifier + stressModifier + healthModifier * stressModifier);
@@ -74,11 +81,7 @@ function calculateDeathChance(age, stats = null) {
   // Base death chance from age group
   let deathChance = ageGroup.deathChance;
 
-  // Health modifier: 0 health = 2x, 100 health = 1x
-  const healthModifier = 1 - (health / 100);
-
-  // Stress modifier: 0 stress = 1x, 100 stress = 4x chance
-  const stressModifier = 1 + (stress / 100) * 3; // Up to 4x at 100 stress
+  const { healthModifier, stressModifier } = calculateDeathModifiers(health, stress);
 
   // Combined modifier with interaction for high stress + low health
   deathChance *= (1 + healthModifier + stressModifier + healthModifier * stressModifier);
