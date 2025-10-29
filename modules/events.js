@@ -112,7 +112,7 @@ function calculateTotalPenalties() {
     const multiplier = selectedEvents.length; // Multiply by number of selected events
 
     // Apply special factor if exists
-    const factor = event.specialFactor || 1;
+    const factor = event.specialFactor || CONSTANTS.EVENTS.PENALTY_BASE_MULTIPLIER;
     const finalMultiplier = multiplier * factor;
 
     // Sum penalties
@@ -155,26 +155,16 @@ function getSelectedEvents() {
 // Get maximum number of events allowed before penalties based on age group
 function getMaxEvents() {
   const ageGroup = getCurrentAgeGroup(gameState.age);
-  return ageGroup.name === 'Teenager' ? 2 : 1;
+  return ageGroup.name === AGE_GROUPS.TEENAGE.name ? CONSTANTS.EVENTS.MAX_EVENTS_TEENAGER : CONSTANTS.EVENTS.MAX_EVENTS_DEFAULT;
 }
 
 // Compute final stats after applying preview changes
 // This function calculates the final stats by applying the preview changes to the current stats.
 // It is used to determine the death chance based on the stats after applying selected events.
 function computeFinalStats(previews) {
-  const finalStats = JSON.parse(JSON.stringify(gameState.stats)); // Deep copy
+  const finalStats = deepCopy(gameState.stats);
 
-  for (const [category, stats] of Object.entries(previews)) {
-    for (const [stat, change] of Object.entries(stats)) {
-      if (finalStats[category] && finalStats[category][stat]) {
-        const newValue = finalStats[category][stat].value + change;
-        finalStats[category][stat].value = Math.max(
-          finalStats[category][stat].min,
-          Math.min(finalStats[category][stat].max, newValue)
-        );
-      }
-    }
-  }
+  applyStatChanges(finalStats, previews);
 
   return finalStats;
 }
@@ -209,7 +199,7 @@ function buildOneTimeEventsHtml(events) {
       displayText += ` <span class="penalty-multiplier ${colorClass}">(${selectedCount}/${Y})</span>`;
       if (selectedCount > Y) {
         const multiplier = selectedCount;
-        const factor = event.specialFactor || 1;
+        const factor = event.specialFactor || CONSTANTS.EVENTS.PENALTY_BASE_MULTIPLIER;
         const finalMultiplier = multiplier * factor;
         const penaltyTexts = [];
         if (event.penalties) {
@@ -255,7 +245,7 @@ function buildRepeatableEventsHtml(events) {
       displayText += ` <span class="penalty-multiplier ${colorClass}">(${selectedCount}/${Y})</span>`;
       if (selectedCount > Y) {
         const multiplier = selectedCount;
-        const factor = event.specialFactor || 1;
+        const factor = event.specialFactor || CONSTANTS.EVENTS.PENALTY_BASE_MULTIPLIER;
         const finalMultiplier = multiplier * factor;
         const penaltyTexts = [];
         if (event.penalties) {
@@ -299,7 +289,7 @@ function buildSelectionSummaryHtml() {
   if (numEvents > Y) {
     selectedEvents.forEach(event => {
       const multiplier = numEvents;
-      const factor = event.specialFactor || 1;
+      const factor = event.specialFactor || CONSTANTS.EVENTS.PENALTY_BASE_MULTIPLIER;
       if (event.penalties) {
         for (const [category, stats] of Object.entries(event.penalties)) {
           for (const [stat, value] of Object.entries(stats)) {

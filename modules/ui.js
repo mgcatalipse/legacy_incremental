@@ -20,6 +20,7 @@ function updateStatsDisplay() {
   console.log('updateStatsDisplay called');
   const previews = calculateStatPreviews();
   console.log('Updating stats display with previews:', previews);
+  console.log('Current gameState.stats:', gameState.stats);
   let statsHtml = '<div id="stats-display"><h3>Stats</h3>';
 
   // Innate stats
@@ -33,10 +34,11 @@ function updateStatsDisplay() {
     const finalValue = Math.max(data.min, Math.min(data.max, currentValue + previewChange));
 
     const statClass = getStatClass(stat, previewChange);
+    const displayValue = isNaN(finalValue) ? 'NaN' : Math.floor(finalValue);
     statsHtml += `
       <div class="stat-item">
         <span class="stat-name">${stat.charAt(0).toUpperCase() + stat.slice(1)}:</span>
-        <span class="stat-value ${statClass}">${Math.floor(finalValue)}${previewText}</span>
+        <span class="stat-value ${statClass}">${displayValue}${previewText}</span>
       </div>
     `;
   }
@@ -53,10 +55,11 @@ function updateStatsDisplay() {
     const finalValue = Math.max(data.min, Math.min(data.max, currentValue + previewChange));
 
     const statClass = getStatClass(stat, previewChange);
+    const displayValue = isNaN(finalValue) ? 'NaN' : Math.floor(finalValue);
     statsHtml += `
       <div class="stat-item">
         <span class="stat-name">${stat.charAt(0).toUpperCase() + stat.slice(1)}:</span>
-        <span class="stat-value ${statClass}">${Math.floor(finalValue)}${previewText}</span>
+        <span class="stat-value ${statClass}">${displayValue}${previewText}</span>
       </div>
     `;
   }
@@ -72,7 +75,7 @@ function updateStatsDisplay() {
     const previewText = previewChange !== 0 ? ` (${displayChange})` : '';
     const finalValue = Math.max(data.min, Math.min(data.max, currentValue + previewChange));
 
-    const displayValue = stat === 'money' ? `$${Math.floor(finalValue)}` : `${Math.floor(finalValue)}`;
+    const displayValue = stat === 'money' ? formatMoney(finalValue) : (isNaN(finalValue) ? 'NaN' : `${Math.floor(finalValue)}`);
 
     const statClass = getStatClass(stat, previewChange);
     statsHtml += `
@@ -150,14 +153,14 @@ function handleSpecialUIStates() {
   }
 
   // Show/hide select child button
-  if (gameState.children.length > 0 && gameState.age >= 18) {
+  if (gameState.children.length > 0 && gameState.age >= CONSTANTS.AGE.PRESTIGE_UNLOCK) {
     $('#select-child').show();
   } else {
     $('#select-child').hide();
   }
 
   // Unlock prestige at age 18
-  if (gameState.age >= 18 && !gameState.prestigeUnlocked) {
+  if (gameState.age >= CONSTANTS.AGE.PRESTIGE_UNLOCK && !gameState.prestigeUnlocked) {
     $("#prestige").removeClass("disabled").text("Prestige (Available!)");
     gameState.prestigeUnlocked = true;
   }
@@ -168,9 +171,9 @@ function addLogMessage(message) {
   const timestamp = new Date().toLocaleTimeString();
   const logEntry = `<div class="log-entry">[${timestamp}] ${message}</div>`;
   logMessages.prepend(logEntry);
-  // Keep only last 100 messages
+  // Keep only last N messages
   const entries = logMessages.children();
-  if (entries.length > 100) {
+  if (entries.length > CONSTANTS.UI.LOG_MAX_ENTRIES) {
     entries.last().remove();
   }
   // Auto-scroll to top (since newest are at top)

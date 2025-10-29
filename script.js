@@ -116,10 +116,10 @@ $("#gain").click(() => {
   gameState.age += 1;
 
   // Apply health reduction for elderly
-  if (gameState.age >= 66) {
-      let healthReduction = 1;
-      if (gameState.age >= 100) {
-          healthReduction += gameState.age - 100;
+  if (gameState.age >= CONSTANTS.AGE.HEALTH_REDUCTION_START) {
+      let healthReduction = CONSTANTS.STATS.HEALTH_REDUCTION_ELDERLY;
+      if (gameState.age >= CONSTANTS.AGE.HEALTH_REDUCTION_MULTIPLIER) {
+          healthReduction += gameState.age - CONSTANTS.AGE.HEALTH_REDUCTION_MULTIPLIER;
       }
       gameState.stats.innate.health.value = Math.max(0, gameState.stats.innate.health.value - healthReduction);
   }
@@ -134,7 +134,7 @@ $("#gain").click(() => {
   addLogMessage(`Aged up to ${gameState.age} years old.`);
 
   // Check for retirement/child selection (elder)
-  if (gameState.age >= 65 && gameState.children.length > 0) {
+  if (gameState.age >= CONSTANTS.AGE.ELDER_START && gameState.children.length > 0) {
     gameState.showChildSelection = true;
   }
 
@@ -152,7 +152,7 @@ $("#select-child").click(() => {
 });
 
 $("#prestige").click(() => {
-  if (!gameState.prestigeUnlocked || gameState.age < 18) return;
+  if (!gameState.prestigeUnlocked || gameState.age < CONSTANTS.AGE.PRESTIGE_UNLOCK) return;
   if (!gameState.prestigeActive) {
     gameState.prestigeActive = true;
     gameState.age = 0; // Reset to baby
@@ -160,7 +160,7 @@ $("#prestige").click(() => {
     gameState.isMarried = false;
     gameState.prestigeUnlocked = false;
     gameState.completedEvents.clear();
-    gameState.stats = JSON.parse(JSON.stringify(STATS)); // Reset stats
+    gameState.stats = deepCopy(STATS); // Reset stats
     $("#prestige").addClass("disabled").text("Prestige (Done)");
 
     updateUI();
@@ -215,40 +215,40 @@ separatorRight.addEventListener('mousedown', function(e) {
 function onMouseMove(e) {
     if (!isDragging) return;
     const containerRect = container.getBoundingClientRect();
-    const totalWidth = containerRect.width - 80; // Subtract separator widths (40px each)
+    const totalWidth = containerRect.width - CONSTANTS.UI.GRID_TOTAL_WIDTH_SUBTRACT; // Subtract separator widths (40px each)
 
     if (currentSeparator === 'left') {
         let leftFr = ((e.clientX - containerRect.left) / totalWidth) * 100;
-        leftFr = Math.max(20, Math.min(80, leftFr)); // Clamp between 20% and 80%
+        leftFr = clamp(leftFr, CONSTANTS.UI.PANEL_MIN_FR, CONSTANTS.UI.PANEL_MAX_FR); // Clamp between 20% and 80%
         let centerFr = 100 - leftFr - storedRightFr;
         let rightFr = storedRightFr;
 
         // If center would be < 20%, adjust right panel
-        if (centerFr < 20) {
-            centerFr = 20;
+        if (centerFr < CONSTANTS.UI.PANEL_MIN_FR) {
+            centerFr = CONSTANTS.UI.PANEL_MIN_FR;
             rightFr = 100 - leftFr - centerFr;
-            rightFr = Math.max(20, rightFr); // Ensure right doesn't go below 20%
+            rightFr = Math.max(CONSTANTS.UI.PANEL_MIN_FR, rightFr); // Ensure right doesn't go below 20%
         }
 
-        container.style.gridTemplateColumns = `${leftFr}fr 40px ${centerFr}fr 40px ${rightFr}fr`;
+        container.style.gridTemplateColumns = `${leftFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${centerFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${rightFr}fr`;
         // Update stored fr values
         storedLeftFr = leftFr;
         storedCenterFr = centerFr;
         storedRightFr = rightFr;
     } else if (currentSeparator === 'right') {
         let rightFr = ((containerRect.right - e.clientX) / totalWidth) * 100;
-        rightFr = Math.max(20, Math.min(80, rightFr)); // Clamp between 20% and 80%
+        rightFr = clamp(rightFr, CONSTANTS.UI.PANEL_MIN_FR, CONSTANTS.UI.PANEL_MAX_FR); // Clamp between 20% and 80%
         let centerFr = 100 - storedLeftFr - rightFr;
         let leftFr = storedLeftFr;
 
         // If center would be < 20%, adjust left panel
-        if (centerFr < 20) {
-            centerFr = 20;
+        if (centerFr < CONSTANTS.UI.PANEL_MIN_FR) {
+            centerFr = CONSTANTS.UI.PANEL_MIN_FR;
             leftFr = 100 - centerFr - rightFr;
-            leftFr = Math.max(20, leftFr); // Ensure left doesn't go below 20%
+            leftFr = Math.max(CONSTANTS.UI.PANEL_MIN_FR, leftFr); // Ensure left doesn't go below 20%
         }
 
-        container.style.gridTemplateColumns = `${leftFr}fr 40px ${centerFr}fr 40px ${rightFr}fr`;
+        container.style.gridTemplateColumns = `${leftFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${centerFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${rightFr}fr`;
         // Update stored fr values
         storedLeftFr = leftFr;
         storedCenterFr = centerFr;
@@ -314,18 +314,18 @@ function updateGridAfterCollapse(side, action) {
         const totalFr = storedLeftFr + storedCenterFr + storedRightFr;
         const newCenterFr = storedCenterFr + (storedLeftFr / 2);
         const newRightFr = storedRightFr + (storedLeftFr / 2);
-        container.style.gridTemplateColumns = `0px 40px ${newCenterFr}fr 40px ${newRightFr}fr`;
+        container.style.gridTemplateColumns = `0px ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${newCenterFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${newRightFr}fr`;
     } else if (side === 'left' && action === 'expand') {
         // Expand left panel, restore stored fr values
-        container.style.gridTemplateColumns = `${storedLeftFr}fr 40px ${storedCenterFr}fr 40px ${storedRightFr}fr`;
+        container.style.gridTemplateColumns = `${storedLeftFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${storedCenterFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${storedRightFr}fr`;
     } else if (side === 'right' && action === 'collapse') {
         // Collapse right panel, redistribute space to left and center
         const totalFr = storedLeftFr + storedCenterFr + storedRightFr;
         const newLeftFr = storedLeftFr + (storedRightFr / 2);
         const newCenterFr = storedCenterFr + (storedRightFr / 2);
-        container.style.gridTemplateColumns = `${newLeftFr}fr 40px ${newCenterFr}fr 40px 0px`;
+        container.style.gridTemplateColumns = `${newLeftFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${newCenterFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px 0px`;
     } else if (side === 'right' && action === 'expand') {
         // Expand right panel, restore stored fr values
-        container.style.gridTemplateColumns = `${storedLeftFr}fr 40px ${storedCenterFr}fr 40px ${storedRightFr}fr`;
+        container.style.gridTemplateColumns = `${storedLeftFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${storedCenterFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${storedRightFr}fr`;
     }
 }

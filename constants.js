@@ -1,0 +1,72 @@
+// Game Constants - Centralized magic numbers for maintainability
+
+const CONSTANTS = {
+  // Age thresholds
+  AGE: {
+    PRESTIGE_UNLOCK: 18,
+    ELDER_START: 65,
+    HEALTH_REDUCTION_START: 66,
+    HEALTH_REDUCTION_MULTIPLIER: 100
+  },
+
+  // Death calculation constants
+  DEATH: {
+    HEALTH_MODIFIER_DIVISOR: 100,
+    HEALTH_MODIFIER_BASE: 0.5,
+    STRESS_MODIFIER_BASE: 1,
+    STRESS_MODIFIER_DIVISOR: 100,
+    LUCK_DIVISOR: 5,
+    MAX_PERCENTAGE: 100
+  },
+
+  // UI constants
+  UI: {
+    PANEL_MIN_FR: 20,
+    PANEL_MAX_FR: 80,
+    SEPARATOR_WIDTH: 40,
+    LOG_MAX_ENTRIES: 100,
+    GRID_TOTAL_WIDTH_SUBTRACT: 80
+  },
+
+  // Family mechanics
+  FAMILY: {
+    WIFE_FINDING_BASE_PROBABILITY: 0.1,
+    WIFE_FINDING_MAX_PROBABILITY: 0.8,
+    CHILD_BIRTH_BASE_PROBABILITY: 0.3,
+    CHILD_BIRTH_MAX_PROBABILITY: 0.9,
+    WIFE_STAT_MULTIPLIER_MIN: 0.8,
+    WIFE_STAT_MULTIPLIER_MAX: 1.2,
+    CHILD_INHERITANCE_PLAYER_WEIGHT: 0.5,
+    CHILD_INHERITANCE_WIFE_WEIGHT: 0.3,
+    CHILD_INHERITANCE_RANDOM_WEIGHT: 0.2,
+    CHILD_INHERITANCE_RANDOM_VARIATION: 20,
+    CHILD_INHERITANCE_BASE_STAT: 50,
+    MONEY_INHERITANCE_RATIO: 0.2,
+    WIFE_COST_RATIO_MIN: 0.05,
+    WIFE_COST_RATIO_MAX: 0.15
+  },
+
+  // Event penalties
+  EVENTS: {
+    PENALTY_BASE_MULTIPLIER: 1,
+    PENALTY_SPECIAL_FACTOR_DEFAULT: 1.0,
+    PENALTY_SPECIAL_FACTOR_HIGH: 1.5,
+    MAX_EVENTS_TEENAGER: 2,
+    MAX_EVENTS_DEFAULT: 1
+  },
+
+  // Stat calculations
+  STATS: {
+    HEALTH_REDUCTION_ELDERLY: 1,
+    LOG_ROLL_MODULO: 100
+  },
+
+  // Probability and random calculations
+  PROBABILITY: {
+    RANDOM_MULTIPLIER: 100,
+    LOG_ROLL_MAX: 100
+  }
+};
+
+// Export for use in other files
+// Note: Since this is loaded globally, CONSTANTS is available everywhere

@@ -11,6 +11,8 @@ Lineage Incremental
 ├── index.html              # Main HTML structure
 ├── script.js               # Main game logic and UI event handling
 ├── styles.css              # Styling for all UI components
+├── constants.js            # Centralized configuration values
+├── utils.js                # Shared utility functions
 ├── modules/                # Modular JavaScript components
 │   ├── game.js            # Core game mechanics (death calculation, stat effects)
 │   ├── ui.js              # UI update functions and display logic
@@ -29,7 +31,9 @@ Lineage Incremental
 
 2. **Modular Design**: Each major system (game mechanics, UI, events, family) is separated into its own module, promoting maintainability and testability.
 
-3. **Data-Driven Design**: Game data (events, stats, age groups) is defined in separate JSON-like structures, making it easy to modify game balance without changing code.
+3. **Constants-Driven Configuration**: Magic numbers and configuration values are centralized in constants.js, making it easy to modify game balance and behavior.
+
+4. **Data-Driven Design**: Game data (events, stats, age groups) is defined in separate JSON-like structures, making it easy to modify game balance without changing code.
 
 4. **jQuery-Based UI**: The UI is built using jQuery for DOM manipulation, providing a consistent API across browsers.
 

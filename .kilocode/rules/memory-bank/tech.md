@@ -37,9 +37,10 @@ legacy_incremental/
 ### File Loading Order
 The application loads files in a specific order to ensure dependencies are met:
 1. jQuery library
-2. Data files (ageGroups.js, lifeEvents.js, stats.js)
-3. Module files (game.js, ui.js, events.js, family.js)
-4. Main script.js file
+2. Constants and utilities (constants.js, utils.js)
+3. Data files (ageGroups.js, lifeEvents.js, stats.js)
+4. Module files (game.js, ui.js, events.js, family.js)
+5. Main script.js file
 
 ## Technical Constraints
 
@@ -66,6 +67,7 @@ The application loads files in a specific order to ensure dependencies are met:
   - Critical for UI updates and event handling
 
 ### Internal Dependencies
+- **Constants and utilities**: Provide centralized configuration and shared functions
 - **Data modules**: Provide game configuration and content
 - **Functional modules**: Handle specific aspects of game logic
 - **Main script**: Orchestrates all components and manages game state

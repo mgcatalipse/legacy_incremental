@@ -4,7 +4,7 @@ function generateWives() {
   const wives = [];
 
   // Generate 3-5 potential wives
-  const numWives = Math.floor(Math.random() * 3) + 3;
+  const numWives = randomBetween(3, 5);
 
   for (let i = 0; i < numWives; i++) {
     const wife = {
@@ -12,12 +12,12 @@ function generateWives() {
       name: `Wife ${i + 1}`,
       stats: {
         innate: {
-          beauty: Math.floor(playerStats.innate.beauty.value * (0.8 + Math.random() * 0.4)),
-          charisma: Math.floor(playerStats.innate.charisma.value * (0.8 + Math.random() * 0.4)),
+          beauty: Math.floor(playerStats.innate.beauty.value * randomBetween(CONSTANTS.FAMILY.WIFE_STAT_MULTIPLIER_MIN, CONSTANTS.FAMILY.WIFE_STAT_MULTIPLIER_MAX)),
+          charisma: Math.floor(playerStats.innate.charisma.value * randomBetween(CONSTANTS.FAMILY.WIFE_STAT_MULTIPLIER_MIN, CONSTANTS.FAMILY.WIFE_STAT_MULTIPLIER_MAX)),
           health: Math.floor(playerStats.innate.health.value * (0.9 + Math.random() * 0.2))
         }
       },
-      cost: Math.floor(playerStats.possessions.money.value * 0.1 * (0.5 + Math.random()))
+      cost: Math.floor(playerStats.possessions.money.value * CONSTANTS.FAMILY.WIFE_COST_RATIO_MIN * randomBetween(0.5, 1.5))
     };
     wives.push(wife);
   }
@@ -43,11 +43,11 @@ function createChild(wife) {
   for (const stat of Object.keys(playerStats.innate)) {
     if (stat !== 'stress') { // Don't inherit stress
       const playerValue = playerStats.innate[stat].value;
-      const wifeValue = wife.stats.innate[stat] || 50;
-      const randomFactor = (Math.random() - 0.5) * 20; // ±10 variation
+      const wifeValue = wife.stats.innate[stat] || CONSTANTS.FAMILY.CHILD_INHERITANCE_BASE_STAT;
+      const randomFactor = (Math.random() - 0.5) * CONSTANTS.FAMILY.CHILD_INHERITANCE_RANDOM_VARIATION; // ±10 variation
 
       child.stats.innate[stat] = {
-        value: Math.floor((playerValue * 0.5) + (wifeValue * 0.3) + 50 + randomFactor),
+        value: calculateInheritedStat(playerValue, wifeValue, CONSTANTS.FAMILY.CHILD_INHERITANCE_RANDOM_VARIATION),
         min: 0,
         max: 100
       };
@@ -55,7 +55,7 @@ function createChild(wife) {
   }
 
   // Split money between children
-  const moneySplit = Math.floor(playerStats.possessions.money.value * 0.2);
+  const moneySplit = Math.floor(playerStats.possessions.money.value * CONSTANTS.FAMILY.MONEY_INHERITANCE_RATIO);
   child.stats.possessions.money = { value: moneySplit, min: 0, max: 1000000 };
 
   // Reduce player's money
@@ -104,7 +104,7 @@ function showWifeSelection() {
           <div>Charisma: ${wife.stats.innate.charisma}</div>
           <div>Health: ${wife.stats.innate.health}</div>
         </div>
-        <div class="wife-cost">Cost: $${wife.cost}</div>
+        <div class="wife-cost">Cost: ${formatMoney(wife.cost)}</div>
         <button class="select-wife-btn" data-wife-index="${index}">Select</button>
       </div>
     `;
@@ -150,7 +150,7 @@ function showChildSelection() {
           <div>Health: ${child.stats.innate.health.value}</div>
           <div>Intelligence: ${child.stats.innate.intelligence.value}</div>
           <div>Charisma: ${child.stats.innate.charisma.value}</div>
-          <div>Money: $${child.stats.possessions.money.value}</div>
+          <div>Money: ${formatMoney(child.stats.possessions.money.value)}</div>
         </div>
         <button class="select-child-btn" data-child-index="${index}">Continue as ${child.name}</button>
       </div>

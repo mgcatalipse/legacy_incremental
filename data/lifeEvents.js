@@ -17,7 +17,7 @@ const LIFE_EVENTS = [
       skills: {},
       possessions: {}
     },
-    specialFactor: 1.5
+    specialFactor: CONSTANTS.EVENTS.PENALTY_SPECIAL_FACTOR_HIGH
   },
   {
     id: "first_words",
@@ -67,7 +67,7 @@ const LIFE_EVENTS = [
       skills: {},
       possessions: {}
     },
-    specialFactor: 1.0
+    specialFactor: CONSTANTS.EVENTS.PENALTY_SPECIAL_FACTOR_DEFAULT
   },
   {
     id: "play_sports",
@@ -175,7 +175,7 @@ const LIFE_EVENTS = [
       skills: {},
       possessions: {}
     },
-    specialFactor: 1.0
+    specialFactor: CONSTANTS.EVENTS.PENALTY_SPECIAL_FACTOR_DEFAULT
   },
 
   // ADULT EVENTS (20-64 years) - Family Events
