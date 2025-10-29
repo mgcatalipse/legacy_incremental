@@ -11,10 +11,11 @@ function applyStatChanges(stats, changes) {
     for (const [stat, change] of Object.entries(categoryChanges)) {
       if (stats[category] && stats[category][stat]) {
         const newValue = stats[category][stat].value + change;
+        const maxValue = (stats[category][stat].max !== null && stats[category][stat].max !== undefined) ? stats[category][stat].max : Infinity;
         stats[category][stat].value = clamp(
           newValue,
           stats[category][stat].min,
-          stats[category][stat].max || Infinity
+          maxValue
         );
       }
     }

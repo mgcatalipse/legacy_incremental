@@ -20,7 +20,6 @@ function updateStatsDisplay() {
   console.log('updateStatsDisplay called');
   const previews = calculateStatPreviews();
   console.log('Updating stats display with previews:', previews);
-  console.log('Current gameState.stats:', gameState.stats);
   let statsHtml = '<div id="stats-display"><h3>Stats</h3>';
 
   // Innate stats
@@ -31,7 +30,11 @@ function updateStatsDisplay() {
     const changeSign = previewChange > 0 ? '+' : (previewChange < 0 ? '' : '');
     const displayChange = `${changeSign}${previewChange}`;
     const previewText = previewChange !== 0 ? ` (${displayChange})` : '';
-    const finalValue = Math.max(data.min, Math.min(data.max, currentValue + previewChange));
+    const rawFinalValue = currentValue + previewChange;
+    const finalValue = data.max !== null && data.max !== undefined
+      ? Math.max(data.min, Math.min(data.max, rawFinalValue))
+      : Math.max(data.min, rawFinalValue);
+
 
     const statClass = getStatClass(stat, previewChange);
     const displayValue = isNaN(finalValue) ? 'NaN' : Math.floor(finalValue);
@@ -52,7 +55,10 @@ function updateStatsDisplay() {
     const changeSign = previewChange > 0 ? '+' : (previewChange < 0 ? '' : '');
     const displayChange = `${changeSign}${previewChange}`;
     const previewText = previewChange !== 0 ? ` (${displayChange})` : '';
-    const finalValue = Math.max(data.min, Math.min(data.max, currentValue + previewChange));
+    const rawFinalValue = currentValue + previewChange;
+    const finalValue = data.max !== null && data.max !== undefined
+      ? Math.max(data.min, Math.min(data.max, rawFinalValue))
+      : Math.max(data.min, rawFinalValue);
 
     const statClass = getStatClass(stat, previewChange);
     const displayValue = isNaN(finalValue) ? 'NaN' : Math.floor(finalValue);
@@ -73,7 +79,10 @@ function updateStatsDisplay() {
     const changeSign = previewChange > 0 ? '+' : (previewChange < 0 ? '' : '');
     const displayChange = stat === 'money' ? `${changeSign}$${Math.abs(previewChange)}` : `${changeSign}${previewChange}`;
     const previewText = previewChange !== 0 ? ` (${displayChange})` : '';
-    const finalValue = Math.max(data.min, Math.min(data.max, currentValue + previewChange));
+    const rawFinalValue = currentValue + previewChange;
+    const finalValue = data.max !== null && data.max !== undefined
+      ? Math.max(data.min, Math.min(data.max, rawFinalValue))
+      : Math.max(data.min, rawFinalValue);
 
     const displayValue = stat === 'money' ? formatMoney(finalValue) : (isNaN(finalValue) ? 'NaN' : `${Math.floor(finalValue)}`);
 

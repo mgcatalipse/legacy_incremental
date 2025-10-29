@@ -8,7 +8,7 @@ const STATS = {
     strength: { value: 5, min: 0, max: 200 },
     agility: { value: 5, min: 0, max: 200 },
     luck: { value: 5, min: 0, max: 200 },
-    stress: { value: 0, min: 0 }
+    stress: { value: 0, min: 0, max: Infinity }
   },
   skills: {
     education: { value: 0, min: 0, max: 200 },
