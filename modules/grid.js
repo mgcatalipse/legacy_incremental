@@ -135,10 +135,26 @@ function collapsePanel(side) {
 
   if (side === 'left') {
     $('.left-panel').hide();
+    $('.separator-left').addClass('deactivated');
+    
+    // Remove event listeners when collapsing
+    const separatorLeft = $('.separator-left')[0];
+    if (separatorLeft) {
+      separatorLeft.removeEventListener('mousedown', startDrag);
+    }
+    
     $('#expand-left').show();
     $('#collapse-left').hide();
   } else if (side === 'right') {
     $('.right-panel').hide();
+    $('.separator-right').addClass('deactivated');
+    
+    // Remove event listeners when collapsing
+    const separatorRight = $('.separator-right')[0];
+    if (separatorRight) {
+      separatorRight.removeEventListener('mousedown', startDrag);
+    }
+    
     $('#expand-right').show();
     $('#collapse-right').hide();
   }
@@ -152,10 +168,26 @@ function collapsePanel(side) {
 function expandPanel(side) {
   if (side === 'left') {
     $('.left-panel').show();
+    $('.separator-left').removeClass('deactivated');
+    
+    // Re-add event listeners when expanding
+    const separatorLeft = $('.separator-left')[0];
+    if (separatorLeft) {
+      separatorLeft.addEventListener('mousedown', startDrag);
+    }
+    
     $('#expand-left').hide();
     $('#collapse-left').show();
   } else if (side === 'right') {
     $('.right-panel').show();
+    $('.separator-right').removeClass('deactivated');
+    
+    // Re-add event listeners when expanding
+    const separatorRight = $('.separator-right')[0];
+    if (separatorRight) {
+      separatorRight.addEventListener('mousedown', startDrag);
+    }
+    
     $('#expand-right').hide();
     $('#collapse-right').show();
   }

@@ -142,6 +142,22 @@ h1 {
   position: relative;
 }
 
+.separator-left.deactivated, .separator-right.deactivated {
+  background: rgba(255, 255, 255, 0.1);
+  cursor: default;
+}
+
+.separator-left.deactivated .collapse-btn, .separator-right.deactivated .collapse-btn {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.separator-left.deactivated #expand-left, .separator-right.deactivated #expand-right {
+  pointer-events: auto;
+  opacity: 1;
+  cursor: pointer;
+}
+
 .collapse-btn {
   background: rgba(255, 255, 255, 0.2);
   color: white;
