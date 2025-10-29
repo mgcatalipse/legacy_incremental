@@ -1,4 +1,8 @@
 
+// =============================================================================
+// GAME STATE
+// =============================================================================
+
 const gameState = {
   age: 0,
   baseGain: 1,
@@ -20,7 +24,13 @@ const gameState = {
 };
 
 
-// Tab switching
+// =============================================================================
+// TAB MANAGEMENT
+// =============================================================================
+
+/**
+ * Switch between different tab views (Human, Empire, Universe)
+ */
 $(".tab-btn").click(function () {
   const tabId = $(this).data("tab");
 
@@ -33,116 +43,234 @@ $(".tab-btn").click(function () {
   $(`#${tabId}`).addClass("active");
 });
 
-// Multiplier buttons removed
+// =============================================================================
+// SPECIAL EVENT PROCESSING
+// =============================================================================
 
-// Process special events with probability calculations
+/**
+ * Process special events that have probability calculations or unique logic
+ */
 function processSpecialEvents() {
   const selectedEvents = getSelectedEvents();
-  
+   
   selectedEvents.forEach(event => {
     switch(event.id) {
       case "find_wife":
-        const wifeProbability = calculateWifeFindingProbability();
-        if (Math.random() < wifeProbability) {
-          processWifeFindingResult(true);
-        } else {
-          processWifeFindingResult(false);
-        }
+        handleFindWifeEvent();
         break;
       case "wedding":
-        if (gameState.selectedWife && !gameState.isMarried) {
-          gameState.isMarried = true;
-          applyStatEffects(event.effects);
-          applyStatEffects(event.penalties);
-        }
+        handleWeddingEvent(event);
         break;
       case "try_for_children":
-        if (gameState.isMarried) {
-          const childProbability = calculateChildBirthProbability();
-          if (Math.random() < childProbability) {
-            const child = createChild(gameState.selectedWife);
-            gameState.children.push(child);
-            addLogMessage(`Child born! ${child.name} has inherited mixed stats from both parents.`);
-          } else {
-            addLogMessage("No child conceived this time. Try again next year.");
-          }
-        }
+        handleChildBirthEvent();
         break;
     }
   });
 }
 
-$("#gain").click(() => {
-  if (gameState.isDead) return;
+/**
+ * Handle wife finding event with probability calculation
+ */
+function handleFindWifeEvent() {
+  const wifeProbability = calculateWifeFindingProbability();
+  if (Math.random() < wifeProbability) {
+    processWifeFindingResult(true);
+  } else {
+    processWifeFindingResult(false);
+  }
+}
 
-  // Check if showing selection UI
-  if (gameState.showWifeSelection || gameState.showChildSelection) return;
-
-  // Get selected events and apply their effects
-  const selectedEvents = getSelectedEvents();
-  selectedEvents.forEach(event => {
-    // Apply event effects
+/**
+ * Handle wedding event
+ */
+function handleWeddingEvent(event) {
+  if (gameState.selectedWife && !gameState.isMarried) {
+    gameState.isMarried = true;
     applyStatEffects(event.effects);
-    // Mark as completed (for one-time events)
-    if (!event.repeatable) {
-      gameState.completedEvents.add(event.id);
+    applyStatEffects(event.penalties);
+  }
+}
+
+/**
+ * Handle child birth event with probability calculation
+ */
+function handleChildBirthEvent() {
+  if (gameState.isMarried) {
+    const childProbability = calculateChildBirthProbability();
+    if (Math.random() < childProbability) {
+      const child = createChild(gameState.selectedWife);
+      gameState.children.push(child);
+      addLogMessage(`Child born! ${child.name} has inherited mixed stats from both parents.`);
+    } else {
+      addLogMessage("No child conceived this time. Try again next year.");
     }
-  });
+  }
+}
 
-  // Calculate and apply penalties from selected events
-  const totalPenalties = calculateTotalPenalties();
-  applyStatEffects(totalPenalties);
+// =============================================================================
+// MAIN GAME LOOP - AGE UP FUNCTIONALITY
+// =============================================================================
 
-  // Process special events
+/**
+ * Handle the main age up process when player clicks the gain button
+ */
+$("#gain").click(() => {
+  // Early returns for game states that prevent aging up
+  if (isGameInUnplayableState()) return;
+
+  // Process all selected events and their effects
+  processSelectedEvents();
+
+  // Apply penalties for selecting too many events
+  applyEventPenalties();
+
+  // Process special probability-based events
   processSpecialEvents();
 
-  // Preserve selections for repeatable events that will be available next year
-  gameState.preservedSelections.clear();
+  // Handle repeatable event selections for next year
+  preserveRepeatableSelections();
+
+  // Clear UI selections after processing
+  clearEventSelections();
+
+  // Age the character and apply age-related effects
+  ageCharacter();
+
+  // Check for death after aging
+  if (checkForDeath()) return;
+
+  // Check for elder stage and child selection
+  checkForElderStage();
+
+  // Update game state and UI
+  refreshGameState();
+});
+
+/**
+ * Check if game is in a state where aging up is not possible
+ */
+function isGameInUnplayableState() {
+  return gameState.isDead ||
+         gameState.showWifeSelection ||
+         gameState.showChildSelection;
+}
+
+/**
+ * Process all selected events and their immediate effects
+ */
+function processSelectedEvents() {
+  const selectedEvents = getSelectedEvents();
+  
   selectedEvents.forEach(event => {
-    if (event.repeatable) {
-      // Check if this event will be available next year
-      const nextYear = gameState.age + 1;
-      const willBeAvailable = nextYear >= event.ageRange.min && nextYear <= event.ageRange.max;
-      if (willBeAvailable) {
-        gameState.preservedSelections.add(event.id);
-      }
+    applyEventEffects(event);
+    markEventAsCompleted(event);
+  });
+}
+
+/**
+ * Apply effects of an individual event
+ */
+function applyEventEffects(event) {
+  applyStatEffects(event.effects);
+}
+
+/**
+ * Mark one-time events as completed
+ */
+function markEventAsCompleted(event) {
+  if (!event.repeatable) {
+    gameState.completedEvents.add(event.id);
+  }
+}
+
+/**
+ * Calculate and apply penalties from selecting too many events
+ */
+function applyEventPenalties() {
+  const totalPenalties = calculateTotalPenalties();
+  applyStatEffects(totalPenalties);
+}
+
+/**
+ * Preserve selections for repeatable events that will be available next year
+ */
+function preserveRepeatableSelections() {
+  gameState.preservedSelections.clear();
+  
+  const selectedEvents = getSelectedEvents();
+  selectedEvents.forEach(event => {
+    if (event.repeatable && willEventBeAvailableNextYear(event)) {
+      gameState.preservedSelections.add(event.id);
     }
   });
+}
 
-  // Clear all selections after applying effects
+/**
+ * Check if an event will be available next year
+ */
+function willEventBeAvailableNextYear(event) {
+  const nextYear = gameState.age + 1;
+  return nextYear >= event.ageRange.min && nextYear <= event.ageRange.max;
+}
+
+/**
+ * Clear all event checkbox selections from UI
+ */
+function clearEventSelections() {
   $('.event-checkbox:checked').prop('checked', false);
+}
 
-  // Age the character by 1 year
+/**
+ * Age the character by 1 year and apply age-related effects
+ */
+function ageCharacter() {
   gameState.age += 1;
+  applyElderHealthReduction();
+}
 
-  // Apply health reduction for elderly
+/**
+ * Apply health reduction for elderly characters
+ */
+function applyElderHealthReduction() {
   if (gameState.age >= CONSTANTS.AGE.HEALTH_REDUCTION_START) {
-      let healthReduction = CONSTANTS.STATS.HEALTH_REDUCTION_ELDERLY;
-      if (gameState.age >= CONSTANTS.AGE.HEALTH_REDUCTION_MULTIPLIER) {
-          healthReduction += gameState.age - CONSTANTS.AGE.HEALTH_REDUCTION_MULTIPLIER;
-      }
-      gameState.stats.innate.health.value = Math.max(0, gameState.stats.innate.health.value - healthReduction);
+    let healthReduction = CONSTANTS.STATS.HEALTH_REDUCTION_ELDERLY;
+    if (gameState.age >= CONSTANTS.AGE.HEALTH_REDUCTION_MULTIPLIER) {
+      healthReduction += gameState.age - CONSTANTS.AGE.HEALTH_REDUCTION_MULTIPLIER;
+    }
+    gameState.stats.innate.health.value = Math.max(0, gameState.stats.innate.health.value - healthReduction);
   }
+}
 
-  // Check for death
+/**
+ * Check if character died and handle game over state
+ */
+function checkForDeath() {
   if (checkDeath(gameState.age)) {
     gameState.isDead = true;
     addLogMessage(`Aged up to ${gameState.age} years old. Unfortunately, you have died.`);
-    return;
+    return true;
   }
 
   addLogMessage(`Aged up to ${gameState.age} years old.`);
+  return false;
+}
 
-  // Check for retirement/child selection (elder)
+/**
+ * Check if character reached elder stage and should select child
+ */
+function checkForElderStage() {
   if (gameState.age >= CONSTANTS.AGE.ELDER_START && gameState.children.length > 0) {
     gameState.showChildSelection = true;
   }
+}
 
-  // Update available events
+/**
+ * Refresh game state and update UI after aging up
+ */
+function refreshGameState() {
   updateEventsList();
-
   updateUI();
-});
+}
 
 
 $("#select-child").click(() => {
@@ -180,152 +308,19 @@ $(document).on('change', '.event-checkbox', function() {
          console.log('After updateUI');
  });
 
-// Resizable separator functionality
-const separatorLeft = $('.separator-left')[0];
-const separatorRight = $('.separator-right')[0];
-const leftPanel = $('.left-panel')[0];
-const centerPanel = $('.center-panel')[0];
-const rightPanel = $('.right-panel')[0];
-const container = $('.human-content')[0];
+// =============================================================================
+// GRID MANAGEMENT
+// =============================================================================
 
-let isDragging = false;
-let currentSeparator = null;
-
-// Stored panel fr values for collapse/expand
-let storedLeftFr = 20;
-let storedCenterFr = 50;
-let storedRightFr = 30;
-
-separatorLeft.addEventListener('mousedown', function(e) {
-    e.preventDefault();
-    isDragging = true;
-    currentSeparator = 'left';
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-});
-
-separatorRight.addEventListener('mousedown', function(e) {
-    e.preventDefault();
-    isDragging = true;
-    currentSeparator = 'right';
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-});
-
-function onMouseMove(e) {
-    if (!isDragging) return;
-    const containerRect = container.getBoundingClientRect();
-    const totalWidth = containerRect.width - CONSTANTS.UI.GRID_TOTAL_WIDTH_SUBTRACT; // Subtract separator widths (40px each)
-
-    if (currentSeparator === 'left') {
-        let leftFr = ((e.clientX - containerRect.left) / totalWidth) * 100;
-        leftFr = clamp(leftFr, CONSTANTS.UI.PANEL_MIN_FR, CONSTANTS.UI.PANEL_MAX_FR); // Clamp between 20% and 80%
-        let centerFr = 100 - leftFr - storedRightFr;
-        let rightFr = storedRightFr;
-
-        // If center would be < 20%, adjust right panel
-        if (centerFr < CONSTANTS.UI.PANEL_MIN_FR) {
-            centerFr = CONSTANTS.UI.PANEL_MIN_FR;
-            rightFr = 100 - leftFr - centerFr;
-            rightFr = Math.max(CONSTANTS.UI.PANEL_MIN_FR, rightFr); // Ensure right doesn't go below 20%
-        }
-
-        container.style.gridTemplateColumns = `${leftFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${centerFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${rightFr}fr`;
-        // Update stored fr values
-        storedLeftFr = leftFr;
-        storedCenterFr = centerFr;
-        storedRightFr = rightFr;
-    } else if (currentSeparator === 'right') {
-        let rightFr = ((containerRect.right - e.clientX) / totalWidth) * 100;
-        rightFr = clamp(rightFr, CONSTANTS.UI.PANEL_MIN_FR, CONSTANTS.UI.PANEL_MAX_FR); // Clamp between 20% and 80%
-        let centerFr = 100 - storedLeftFr - rightFr;
-        let leftFr = storedLeftFr;
-
-        // If center would be < 20%, adjust left panel
-        if (centerFr < CONSTANTS.UI.PANEL_MIN_FR) {
-            centerFr = CONSTANTS.UI.PANEL_MIN_FR;
-            leftFr = 100 - centerFr - rightFr;
-            leftFr = Math.max(CONSTANTS.UI.PANEL_MIN_FR, leftFr); // Ensure left doesn't go below 20%
-        }
-
-        container.style.gridTemplateColumns = `${leftFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${centerFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${rightFr}fr`;
-        // Update stored fr values
-        storedLeftFr = leftFr;
-        storedCenterFr = centerFr;
-        storedRightFr = rightFr;
-    }
+/**
+ * Initialize grid functionality (delegated to grid module)
+ */
+function initGrid() {
+  initGridResizing();
+  initPanelCollapse();
 }
 
-function onMouseUp() {
-    isDragging = false;
-    currentSeparator = null;
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('mouseup', onMouseUp);
-}
-
-// Collapse/expand functionality
-$('#collapse-left').click(function() {
-    // Store current fr values before collapsing
-    const currentGrid = container.style.gridTemplateColumns || '20fr 40px 50fr 40px 30fr';
-    const parts = currentGrid.split(' ');
-    if (parts.length === 5) {
-        storedLeftFr = parseFloat(parts[0]);
-        storedCenterFr = parseFloat(parts[2]);
-        storedRightFr = parseFloat(parts[4]);
-    }
-    $('.left-panel').hide();
-    $('#expand-left').show();
-    $('#collapse-left').hide();
-    updateGridAfterCollapse('left', 'collapse');
+// Initialize grid when DOM is ready
+$(document).ready(function() {
+  initGrid();
 });
-
-$('#expand-left').click(function() {
-    $('.left-panel').show();
-    $('#expand-left').hide();
-    $('#collapse-left').show();
-    updateGridAfterCollapse('left', 'expand');
-});
-
-$('#collapse-right').click(function() {
-    // Store current fr values before collapsing
-    const currentGrid = container.style.gridTemplateColumns || '20fr 40px 50fr 40px 30fr';
-    const parts = currentGrid.split(' ');
-    if (parts.length === 5) {
-        storedLeftFr = parseFloat(parts[0]);
-        storedCenterFr = parseFloat(parts[2]);
-        storedRightFr = parseFloat(parts[4]);
-    }
-    $('.right-panel').hide();
-    $('#expand-right').show();
-    $('#collapse-right').hide();
-    updateGridAfterCollapse('right', 'collapse');
-});
-
-$('#expand-right').click(function() {
-    $('.right-panel').show();
-    $('#expand-right').hide();
-    $('#collapse-right').show();
-    updateGridAfterCollapse('right', 'expand');
-});
-
-function updateGridAfterCollapse(side, action) {
-    if (side === 'left' && action === 'collapse') {
-        // Collapse left panel, redistribute space to center and right
-        const totalFr = storedLeftFr + storedCenterFr + storedRightFr;
-        const newCenterFr = storedCenterFr + (storedLeftFr / 2);
-        const newRightFr = storedRightFr + (storedLeftFr / 2);
-        container.style.gridTemplateColumns = `0px ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${newCenterFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${newRightFr}fr`;
-    } else if (side === 'left' && action === 'expand') {
-        // Expand left panel, restore stored fr values
-        container.style.gridTemplateColumns = `${storedLeftFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${storedCenterFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${storedRightFr}fr`;
-    } else if (side === 'right' && action === 'collapse') {
-        // Collapse right panel, redistribute space to left and center
-        const totalFr = storedLeftFr + storedCenterFr + storedRightFr;
-        const newLeftFr = storedLeftFr + (storedRightFr / 2);
-        const newCenterFr = storedCenterFr + (storedRightFr / 2);
-        container.style.gridTemplateColumns = `${newLeftFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${newCenterFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px 0px`;
-    } else if (side === 'right' && action === 'expand') {
-        // Expand right panel, restore stored fr values
-        container.style.gridTemplateColumns = `${storedLeftFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${storedCenterFr}fr ${CONSTANTS.UI.SEPARATOR_WIDTH}px ${storedRightFr}fr`;
-    }
-}

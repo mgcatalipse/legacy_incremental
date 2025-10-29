@@ -1,5 +1,17 @@
 
-// Get current age group based on age
+/**
+ * Game Module - Core game mechanics and calculations
+ */
+
+// =============================================================================
+// AGE GROUP MANAGEMENT
+// =============================================================================
+
+/**
+ * Get current age group based on age
+ * @param {number} age - The character's age
+ * @returns {object} Age group object with min, max, deathChance, and name
+ */
 function getCurrentAgeGroup(age) {
   for (const [key, group] of Object.entries(AGE_GROUPS)) {
     if (age >= group.min && age <= group.max) {
@@ -9,7 +21,16 @@ function getCurrentAgeGroup(age) {
   return AGE_GROUPS.ELDER; // Default to elder for ages over 200
 }
 
-// Helper function to calculate death chance modifiers
+// =============================================================================
+// DEATH CALCULATION LOGIC
+// =============================================================================
+
+/**
+ * Calculate death chance modifiers based on health and stress
+ * @param {number} health - Current health value
+ * @param {number} stress - Current stress value
+ * @returns {object} Object containing healthModifier and stressModifier
+ */
 function calculateDeathModifiers(health, stress) {
    // Health modifier: 0 health = 100% death (2x multiplier), 100 health = 1x
    const healthModifier = 1 - (health / CONSTANTS.DEATH.HEALTH_MODIFIER_DIVISOR);

@@ -9,15 +9,16 @@ The Lineage Incremental game follows a modular JavaScript architecture with clea
 ```
 Lineage Incremental
 ├── index.html              # Main HTML structure
-├── script.js               # Main game logic and UI event handling
+├── script.js               # Main game logic and UI event handling (refactored)
 ├── styles.css              # Styling for all UI components
-├── constants.js            # Centralized configuration values
-├── utils.js                # Shared utility functions
+├── constants.js            # Centralized configuration values (enhanced)
+├── utils.js                # Shared utility functions (enhanced with unified penalty system)
 ├── modules/                # Modular JavaScript components
-│   ├── game.js            # Core game mechanics (death calculation, stat effects)
-│   ├── ui.js              # UI update functions and display logic
-│   ├── events.js          # Event system (selection, previews, penalties)
-│   └── family.js          # Family mechanics (marriage, children, succession)
+│   ├── game.js            # Core game mechanics (death calculation, stat effects) (refactored)
+│   ├── ui.js              # UI update functions and display logic (refactored)
+│   ├── events.js          # Event system (selection, previews, penalties) (refactored)
+│   ├── family.js          # Family mechanics (marriage, children, succession)
+│   └── grid.js            # Grid management and panel resizing (new)
 ├── data/                  # Game data definitions
 │   ├── ageGroups.js       # Age group definitions and death chances
 │   ├── lifeEvents.js      # All available life events with effects

@@ -73,4 +73,107 @@ function rollLog() {
   return Math.floor(Math.random() * CONSTANTS.PROBABILITY.LOG_ROLL_MAX);
 }
 
+// =============================================================================
+// UNIFIED PENALTY CALCULATION SYSTEM
+// =============================================================================
+
+/**
+ * Calculate unified penalty system for event selection
+ * This function provides a centralized way to calculate penalties when
+ * selecting too many events, taking into account various factors
+ * @param {array} selectedEvents - Array of selected events
+ * @param {number} maxEvents - Maximum events allowed without penalties
+ * @returns {object} Object containing total penalties and calculation details
+ */
+function calculateUnifiedPenalties(selectedEvents, maxEvents) {
+  const penaltyInfo = {
+    totalPenalties: { innate: {}, skills: {}, possessions: {} },
+    calculation: {
+      selectedCount: selectedEvents.length,
+      maxAllowed: maxEvents,
+      penaltyApplied: selectedEvents.length > maxEvents,
+      finalMultiplier: 1
+    },
+    breakdown: { innate: {}, skills: {}, possessions: {} }
+  };
+
+  // If no penalty needed, return early
+  if (!penaltyInfo.calculation.penaltyApplied) {
+    return penaltyInfo;
+  }
+
+  const selectedCount = selectedEvents.length;
+  
+  // Calculate base multiplier from exceeding limits
+  const baseMultiplier = selectedCount * CONSTANTS.EVENTS.PENALTY_BASE_MULTIPLIER;
+  
+  // Apply special factors based on event types
+  let specialFactorSum = 0;
+  let eventsWithSpecialFactors = 0;
+  
+  selectedEvents.forEach(event => {
+    if (event.specialFactor) {
+      specialFactorSum += event.specialFactor;
+      eventsWithSpecialFactors++;
+    }
+  });
+  
+  // Calculate final multiplier
+  const averageSpecialFactor = eventsWithSpecialFactors > 0 ? specialFactorSum / eventsWithSpecialFactors : 1;
+  penaltyInfo.calculation.finalMultiplier = baseMultiplier * averageSpecialFactor;
+
+  // Calculate total penalties
+  selectedEvents.forEach(event => {
+    if (event.penalties) {
+      for (const [category, stats] of Object.entries(event.penalties)) {
+        for (const [stat, value] of Object.entries(stats)) {
+          // Initialize category and stat if not present
+          if (!penaltyInfo.totalPenalties[category][stat]) {
+            penaltyInfo.totalPenalties[category][stat] = 0;
+            penaltyInfo.breakdown[category][stat] = [];
+          }
+          
+          // Calculate penalty with final multiplier
+          const finalPenalty = value * penaltyInfo.calculation.finalMultiplier;
+          penaltyInfo.totalPenalties[category][stat] += finalPenalty;
+          
+          // Add to breakdown for transparency
+          penaltyInfo.breakdown[category][stat].push({
+            eventName: event.name,
+            basePenalty: value,
+            multiplier: penaltyInfo.calculation.finalMultiplier,
+            finalPenalty: finalPenalty
+          });
+        }
+      }
+    }
+  });
+
+  return penaltyInfo;
+}
+
+/**
+ * Generate human-readable penalty explanation
+ * @param {object} penaltyInfo - Penalty information from calculateUnifiedPenalties
+ * @returns {string} Human-readable explanation of penalties
+ */
+function explainPenalties(penaltyInfo) {
+  if (!penaltyInfo.calculation.penaltyApplied) {
+    return "No penalties applied.";
+  }
+  
+  const explanation = [];
+  explanation.push(`Selected ${penaltyInfo.calculation.selectedCount} events (max: ${penaltyInfo.calculation.maxAllowed})`);
+  explanation.push(`Penalty multiplier: ${penaltyInfo.calculation.finalMultiplier.toFixed(2)}x`);
+  
+  const penaltyCount = Object.values(penaltyInfo.totalPenalties)
+    .reduce((count, category) => count + Object.keys(category).length, 0);
+  
+  if (penaltyCount > 0) {
+    explanation.push("Penalties will be applied to your stats.");
+  }
+  
+  return explanation.join(". ") + ".";
+}
+
 // No export, functions are global

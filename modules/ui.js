@@ -1,4 +1,17 @@
-// Helper function to determine the CSS class for stat value based on stat name and preview change
+/**
+ * UI Module - Handles all user interface updates and display logic
+ */
+
+// =============================================================================
+// STAT DISPLAY LOGIC
+// =============================================================================
+
+/**
+ * Determine CSS class for stat value based on stat name and preview change
+ * @param {string} statName - The name of the stat
+ * @param {number} previewChange - The preview change value
+ * @returns {string} CSS class name for styling
+ */
 function getStatClass(statName, previewChange) {
   if (statName === 'stress') {
     if (previewChange > 0) return 'stat-stress-positive-shadow-red';
@@ -10,91 +23,107 @@ function getStatClass(statName, previewChange) {
   return '';
 }
 
-// Update stats display with previews
-// This function refreshes the stats UI to show current values along with preview changes
-// from selected events. It calls calculateStatPreviews() to get the total changes and
-// displays them in parentheses next to each stat (e.g., "10 (+5)").
-// This provides real-time feedback on how stats will change before applying events.
-// It is triggered by the event listener in script.js when checkboxes are changed.
+/**
+ * Calculate final value after applying preview changes
+ * @param {number} currentValue - Current stat value
+ * @param {number} previewChange - Proposed change from selected events
+ * @param {object} bounds - Min/max bounds for the stat
+ * @returns {number} Final value clamped within bounds
+ */
+function calculateFinalValue(currentValue, previewChange, bounds) {
+  const rawFinalValue = currentValue + previewChange;
+  const maxValue = (bounds.max !== null && bounds.max !== undefined) ? bounds.max : Infinity;
+  return Math.max(bounds.min, Math.min(maxValue, rawFinalValue));
+}
+
+/**
+ * Format stat change for display
+ * @param {number} previewChange - The change value
+ * @param {string} statName - The name of the stat (for special formatting)
+ * @returns {string} Formatted change string
+ */
+function formatStatChange(previewChange, statName) {
+  if (previewChange === 0) return '';
+  
+  const sign = previewChange > 0 ? '+' : '';
+  if (statName === 'money') {
+    return `${sign}$${Math.abs(previewChange)}`;
+  }
+  return `${sign}${previewChange}`;
+}
+
+/**
+ * Format stat value for display
+ * @param {number} value - The stat value
+ * @param {string} statName - The name of the stat
+ * @returns {string} Formatted value for display
+ */
+function formatStatValue(value, statName) {
+  if (isNaN(value)) return 'NaN';
+  
+  if (statName === 'money') {
+    return formatMoney(value);
+  }
+  return Math.floor(value);
+}
+
+/**
+ * Render a single stat item for display
+ * @param {string} statName - Name of the stat
+ * @param {object} data - Stat data object with value, min, max
+ * @param {number} previewChange - Current preview change
+ * @returns {string} HTML string for the stat item
+ */
+function renderStatItem(statName, data, previewChange) {
+  const currentValue = data.value;
+  const finalValue = calculateFinalValue(currentValue, previewChange, data);
+  const displayValue = formatStatValue(finalValue, statName);
+  const changeText = formatStatChange(previewChange, statName);
+  const previewText = previewChange !== 0 ? ` (${changeText})` : '';
+  const statClass = getStatClass(statName, previewChange);
+
+  return `
+    <div class="stat-item">
+      <span class="stat-name">${statName.charAt(0).toUpperCase() + statName.slice(1)}:</span>
+      <span class="stat-value ${statClass}">${displayValue}${previewText}</span>
+    </div>
+  `;
+}
+
+/**
+ * Render all stats for a category (innate, skills, possessions)
+ * @param {string} categoryName - Name of the category
+ * @param {object} stats - Stats object for the category
+ * @param {object} previews - Preview changes object
+ * @returns {string} HTML string for the stat category
+ */
+function renderStatCategory(categoryName, stats, previews) {
+  let categoryHtml = `<div class="stat-category"><h4>${categoryName}</h4>`;
+  
+  for (const [statName, data] of Object.entries(stats)) {
+    const previewChange = previews[categoryName.toLowerCase()]?.[statName] || 0;
+    categoryHtml += renderStatItem(statName, data, previewChange);
+  }
+  
+  categoryHtml += '</div>';
+  return categoryHtml;
+}
+
+/**
+ * Update stats display with previews
+ * This function refreshes the stats UI to show current values along with preview changes
+ * from selected events. It calls calculateStatPreviews() to get the total changes and
+ * displays them in parentheses next to each stat (e.g., "10 (+5)").
+ * This provides real-time feedback on how stats will change before applying events.
+ */
 function updateStatsDisplay() {
-  console.log('updateStatsDisplay called');
   const previews = calculateStatPreviews();
-  console.log('Updating stats display with previews:', previews);
+  
   let statsHtml = '<div id="stats-display"><h3>Stats</h3>';
-
-  // Innate stats
-  statsHtml += '<div class="stat-category"><h4>Innate</h4>';
-  for (const [stat, data] of Object.entries(gameState.stats.innate)) {
-    const currentValue = data.value;
-    const previewChange = previews.innate[stat] || 0;
-    const changeSign = previewChange > 0 ? '+' : (previewChange < 0 ? '' : '');
-    const displayChange = `${changeSign}${previewChange}`;
-    const previewText = previewChange !== 0 ? ` (${displayChange})` : '';
-    const rawFinalValue = currentValue + previewChange;
-    const finalValue = data.max !== null && data.max !== undefined
-      ? Math.max(data.min, Math.min(data.max, rawFinalValue))
-      : Math.max(data.min, rawFinalValue);
-
-
-    const statClass = getStatClass(stat, previewChange);
-    const displayValue = isNaN(finalValue) ? 'NaN' : Math.floor(finalValue);
-    statsHtml += `
-      <div class="stat-item">
-        <span class="stat-name">${stat.charAt(0).toUpperCase() + stat.slice(1)}:</span>
-        <span class="stat-value ${statClass}">${displayValue}${previewText}</span>
-      </div>
-    `;
-  }
+  statsHtml += renderStatCategory('Innate', gameState.stats.innate, previews);
+  statsHtml += renderStatCategory('Skills', gameState.stats.skills, previews);
+  statsHtml += renderStatCategory('Possessions', gameState.stats.possessions, previews);
   statsHtml += '</div>';
-
-  // Skills
-  statsHtml += '<div class="stat-category"><h4>Skills</h4>';
-  for (const [stat, data] of Object.entries(gameState.stats.skills)) {
-    const currentValue = data.value;
-    const previewChange = previews.skills[stat] || 0;
-    const changeSign = previewChange > 0 ? '+' : (previewChange < 0 ? '' : '');
-    const displayChange = `${changeSign}${previewChange}`;
-    const previewText = previewChange !== 0 ? ` (${displayChange})` : '';
-    const rawFinalValue = currentValue + previewChange;
-    const finalValue = data.max !== null && data.max !== undefined
-      ? Math.max(data.min, Math.min(data.max, rawFinalValue))
-      : Math.max(data.min, rawFinalValue);
-
-    const statClass = getStatClass(stat, previewChange);
-    const displayValue = isNaN(finalValue) ? 'NaN' : Math.floor(finalValue);
-    statsHtml += `
-      <div class="stat-item">
-        <span class="stat-name">${stat.charAt(0).toUpperCase() + stat.slice(1)}:</span>
-        <span class="stat-value ${statClass}">${displayValue}${previewText}</span>
-      </div>
-    `;
-  }
-  statsHtml += '</div>';
-
-  // Possessions
-  statsHtml += '<div class="stat-category"><h4>Possessions</h4>';
-  for (const [stat, data] of Object.entries(gameState.stats.possessions)) {
-    const currentValue = data.value;
-    const previewChange = previews.possessions[stat] || 0;
-    const changeSign = previewChange > 0 ? '+' : (previewChange < 0 ? '' : '');
-    const displayChange = stat === 'money' ? `${changeSign}$${Math.abs(previewChange)}` : `${changeSign}${previewChange}`;
-    const previewText = previewChange !== 0 ? ` (${displayChange})` : '';
-    const rawFinalValue = currentValue + previewChange;
-    const finalValue = data.max !== null && data.max !== undefined
-      ? Math.max(data.min, Math.min(data.max, rawFinalValue))
-      : Math.max(data.min, rawFinalValue);
-
-    const displayValue = stat === 'money' ? formatMoney(finalValue) : (isNaN(finalValue) ? 'NaN' : `${Math.floor(finalValue)}`);
-
-    const statClass = getStatClass(stat, previewChange);
-    statsHtml += `
-      <div class="stat-item">
-        <span class="stat-name">${stat.charAt(0).toUpperCase() + stat.slice(1)}:</span>
-        <span class="stat-value ${statClass}">${displayValue}${previewText}</span>
-      </div>
-    `;
-  }
-  statsHtml += '</div></div>';
 
   // Update the left panel with stats instead of just age
   $('.left-panel').html(`

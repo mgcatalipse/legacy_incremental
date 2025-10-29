@@ -1,4 +1,16 @@
-// Generate dynamic description for events
+/**
+ * Events Module - Handles life event system, selection, and display
+ */
+
+// =============================================================================
+// EVENT DESCRIPTION GENERATION
+// =============================================================================
+
+/**
+ * Generate dynamic description for events with effect values and selection status
+ * @param {object} event - The event object
+ * @returns {string} Formatted event description
+ */
 function generateEventDescription(event) {
   let description = event.description;
 
@@ -182,139 +194,180 @@ function generatePenaltyText(penalties) {
   return penaltyTexts.join(', ');
 }
 
-// Helper function to build HTML for one-time events
+// =============================================================================
+// EVENT DISPLAY GENERATION
+// =============================================================================
+
+/**
+ * Generate penalty text for an event when exceeding selection limits
+ * @param {object} event - The event object
+ * @param {number} selectedCount - Total number of selected events
+ * @returns {string} Formatted penalty text
+ */
+function generatePenaltyText(event, selectedCount) {
+  if (selectedCount <= getMaxEvents()) return '';
+  
+  const multiplier = selectedCount;
+  const factor = event.specialFactor || CONSTANTS.EVENTS.PENALTY_BASE_MULTIPLIER;
+  const finalMultiplier = multiplier * factor;
+  
+  if (!event.penalties) return '';
+  
+  const penaltyTexts = [];
+  for (const [category, stats] of Object.entries(event.penalties)) {
+    for (const [stat, value] of Object.entries(stats)) {
+      const multipliedValue = value * finalMultiplier;
+      penaltyTexts.push(`-${multipliedValue} ${stat}`);
+    }
+  }
+  
+  return penaltyTexts.length > 0 ? ` <span class="penalty-details">Penalties: ${penaltyTexts.join(', ')}</span>` : '';
+}
+
+/**
+ * Generate display text for an event based on selection state
+ * @param {object} event - The event object
+ * @param {number} selectedCount - Total number of selected events
+ * @param {boolean} isRepeatable - Whether the event is repeatable
+ * @returns {string} Formatted display text
+ */
+function generateEventDisplayText(event, selectedCount, isRepeatable) {
+  const maxEvents = getMaxEvents();
+  let displayText = `<span class="event-name">${event.name}</span>`;
+  
+  if (isRepeatable) {
+    displayText += `<span class="repeatable-badge">Repeatable</span>`;
+  }
+  
+  if (selectedCount > 0) {
+    const colorClass = selectedCount <= maxEvents ? 'penalty-green' : 'penalty-red';
+    displayText += ` <span class="penalty-multiplier ${colorClass}">(${selectedCount}/${maxEvents})</span>`;
+    displayText += generatePenaltyText(event, selectedCount);
+  }
+  
+  return displayText;
+}
+
+/**
+ * Build HTML for a single event
+ * @param {object} event - The event object
+ * @param {number} selectedCount - Total number of selected events
+ * @param {boolean} isRepeatable - Whether the event is repeatable
+ * @returns {string} HTML string for the event
+ */
+function buildEventHtml(event, selectedCount, isRepeatable) {
+  const isSelected = $('.event-checkbox[data-event-id="' + event.id + '"]:checked').length > 0;
+  const isPreserved = isRepeatable && gameState.preservedSelections.has(event.id);
+  const displayText = generateEventDisplayText(event, selectedCount, isRepeatable);
+  const checked = isRepeatable ? (isSelected || isPreserved) : isSelected;
+  
+  return `
+    <div class="event-item ${isRepeatable ? 'repeatable' : ''} ${isSelected ? 'selected' : ''}">
+      <label class="event-label">
+        <input type="checkbox" class="event-checkbox" data-event-id="${event.id}" ${checked ? 'checked' : ''}>
+        ${displayText}
+      </label>
+      <div class="event-description">${generateEventDescription(event)}</div>
+    </div>
+  `;
+}
+
+/**
+ * Build HTML for one-time events
+ * @param {array} events - Array of one-time events
+ * @returns {string} Combined HTML string for all events
+ */
 function buildOneTimeEventsHtml(events) {
   const selectedCount = getSelectedEvents().length;
-  const Y = getMaxEvents();
-  return events.map(event => {
-    const isSelected = $('.event-checkbox[data-event-id="' + event.id + '"]:checked').length > 0;
-    let displayText = `<span class="event-name">${event.name}</span>`;
-    if (selectedCount > 0) {
-      let colorClass = '';
-      if (selectedCount <= Y) {
-        colorClass = 'penalty-green';
-      } else {
-        colorClass = 'penalty-red';
-      }
-      displayText += ` <span class="penalty-multiplier ${colorClass}">(${selectedCount}/${Y})</span>`;
-      if (selectedCount > Y) {
-        const multiplier = selectedCount;
-        const factor = event.specialFactor || CONSTANTS.EVENTS.PENALTY_BASE_MULTIPLIER;
-        const finalMultiplier = multiplier * factor;
-        const penaltyTexts = [];
-        if (event.penalties) {
-          for (const [category, stats] of Object.entries(event.penalties)) {
-            for (const [stat, value] of Object.entries(stats)) {
-              const multipliedValue = value * finalMultiplier;
-              penaltyTexts.push(`-${multipliedValue} ${stat}`);
-            }
-          }
-        }
-        if (penaltyTexts.length > 0) {
-          displayText += ` <span class="penalty-details">Penalties: ${penaltyTexts.join(', ')}</span>`;
-        }
-      }
-    }
-    return `
-      <div class="event-item ${isSelected ? 'selected' : ''}">
-        <label class="event-label">
-          <input type="checkbox" class="event-checkbox" data-event-id="${event.id}" ${isSelected ? 'checked' : ''}>
-          ${displayText}
-        </label>
-        <div class="event-description">${generateEventDescription(event)}</div>
-      </div>
-    `;
-  }).join('');
+  return events.map(event => buildEventHtml(event, selectedCount, false)).join('');
 }
 
-// Helper function to build HTML for repeatable events
+/**
+ * Build HTML for repeatable events
+ * @param {array} events - Array of repeatable events
+ * @returns {string} Combined HTML string for all events
+ */
 function buildRepeatableEventsHtml(events) {
   const selectedCount = getSelectedEvents().length;
-  const Y = getMaxEvents();
-  return events.map(event => {
-    const isSelected = $('.event-checkbox[data-event-id="' + event.id + '"]:checked').length > 0;
-    const isPreserved = gameState.preservedSelections.has(event.id);
-    let displayText = `<span class="event-name">${event.name}</span><span class="repeatable-badge">Repeatable</span>`;
-    if (selectedCount > 0) {
-      let colorClass = '';
-      if (selectedCount <= Y) {
-        colorClass = 'penalty-green';
-      } else {
-        colorClass = 'penalty-red';
-      }
-      displayText += ` <span class="penalty-multiplier ${colorClass}">(${selectedCount}/${Y})</span>`;
-      if (selectedCount > Y) {
-        const multiplier = selectedCount;
-        const factor = event.specialFactor || CONSTANTS.EVENTS.PENALTY_BASE_MULTIPLIER;
-        const finalMultiplier = multiplier * factor;
-        const penaltyTexts = [];
-        if (event.penalties) {
-          for (const [category, stats] of Object.entries(event.penalties)) {
-            for (const [stat, value] of Object.entries(stats)) {
-              const multipliedValue = value * finalMultiplier;
-              penaltyTexts.push(`-${multipliedValue} ${stat}`);
-            }
-          }
-        }
-        if (penaltyTexts.length > 0) {
-          displayText += ` <span class="penalty-details">Penalties: ${penaltyTexts.join(', ')}</span>`;
+  return events.map(event => buildEventHtml(event, selectedCount, true)).join('');
+}
+
+// =============================================================================
+// SELECTION SUMMARY GENERATION
+// =============================================================================
+
+/**
+ * Calculate penalty breakdown for display
+ * @param {array} selectedEvents - Array of selected events
+ * @returns {object} Object containing total penalties and breakdown
+ */
+function calculatePenaltyBreakdown(selectedEvents) {
+  const numEvents = selectedEvents.length;
+  const maxEvents = getMaxEvents();
+  
+  if (numEvents <= maxEvents) {
+    return { totalPenalties: {}, breakdown: {} };
+  }
+  
+  let totalPenalties = { innate: {}, skills: {}, possessions: {} };
+  let breakdown = { innate: {}, skills: {}, possessions: {} };
+  
+  selectedEvents.forEach(event => {
+    const multiplier = numEvents;
+    const factor = event.specialFactor || CONSTANTS.EVENTS.PENALTY_BASE_MULTIPLIER;
+    
+    if (event.penalties) {
+      for (const [category, stats] of Object.entries(event.penalties)) {
+        for (const [stat, value] of Object.entries(stats)) {
+          if (!totalPenalties[category][stat]) totalPenalties[category][stat] = 0;
+          const penaltyValue = value * multiplier * factor;
+          totalPenalties[category][stat] += penaltyValue;
+          
+          if (!breakdown[category][stat]) breakdown[category][stat] = [];
+          breakdown[category][stat].push(`${value} * ${multiplier} * ${factor}`);
         }
       }
     }
-    return `
-      <div class="event-item repeatable ${isSelected ? 'selected' : ''}">
-        <label class="event-label">
-          <input type="checkbox" class="event-checkbox" data-event-id="${event.id}" ${(isSelected || isPreserved) ? 'checked' : ''}>
-          ${displayText}
-        </label>
-        <div class="event-description">${generateEventDescription(event)}</div>
-      </div>
-    `;
-  }).join('');
+  });
+  
+  return { totalPenalties, breakdown };
 }
 
-// Helper function to build selection summary HTML
+/**
+ * Convert stat effects object to formatted text array
+ * @param {object} effects - Effects object (effects or penalties)
+ * @param {string} prefix - Prefix for display (e.g., "", "-")
+ * @returns {array} Array of formatted strings
+ */
+function formatStatEffects(effects, prefix = '') {
+  const formattedTexts = [];
+  
+  for (const [category, stats] of Object.entries(effects)) {
+    for (const [stat, value] of Object.entries(stats)) {
+      if (value !== 0) {
+        formattedTexts.push(`${prefix}${value} ${stat}`);
+      }
+    }
+  }
+  
+  return formattedTexts;
+}
+
+/**
+ * Build selection summary HTML for display
+ * @returns {string} HTML string for the selection summary
+ */
 function buildSelectionSummaryHtml() {
   const selectedEvents = getSelectedEvents();
   if (selectedEvents.length === 0) return '';
 
   const totalEffects = calculateStatPreviews();
-
-  // Calculate total penalties with breakdown
-  const numEvents = selectedEvents.length;
-  const Y = getMaxEvents();
-  let totalPenalties = { innate: {}, skills: {}, possessions: {} };
-  let breakdown = { innate: {}, skills: {}, possessions: {} };
-
-  if (numEvents > Y) {
-    selectedEvents.forEach(event => {
-      const multiplier = numEvents;
-      const factor = event.specialFactor || CONSTANTS.EVENTS.PENALTY_BASE_MULTIPLIER;
-      if (event.penalties) {
-        for (const [category, stats] of Object.entries(event.penalties)) {
-          for (const [stat, value] of Object.entries(stats)) {
-            if (!totalPenalties[category][stat]) totalPenalties[category][stat] = 0;
-            totalPenalties[category][stat] += value * multiplier * factor;
-            if (!breakdown[category][stat]) breakdown[category][stat] = [];
-            breakdown[category][stat].push(`${value} * ${multiplier} * ${factor}`);
-          }
-        }
-      }
-    });
-  }
+  const { totalPenalties, breakdown } = calculatePenaltyBreakdown(selectedEvents);
 
   let summaryHtml = '<div class="selection-summary"><h4>Selected for Next Age-Up:</h4>';
 
   // Show total effects
-  const effectTexts = [];
-  for (const [category, stats] of Object.entries(totalEffects)) {
-    for (const [stat, value] of Object.entries(stats)) {
-      if (value !== 0) {
-        effectTexts.push(`${value} ${stat}`);
-      }
-    }
-  }
-
+  const effectTexts = formatStatEffects(totalEffects);
   if (effectTexts.length > 0) {
     summaryHtml += `<div class="summary-effects">Effects: ${effectTexts.join(', ')}</div>`;
   }
