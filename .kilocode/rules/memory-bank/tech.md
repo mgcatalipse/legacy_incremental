@@ -15,6 +15,8 @@
 ### Development Tools
 - **VS Code**: Primary development environment
 - **Git**: Version control (indicated by .gitignore file)
+- **Playwright**: End-to-end testing framework for browser automation and UI testing
+- **Jest**: Unit testing framework (configured but not actively used for E2E tests)
 
 ## Development Setup
 
@@ -24,11 +26,14 @@ legacy_incremental/
 ├── .kilocode/               # Memory bank and rules
 ├── data/                   # Game data definitions
 ├── modules/                # Modular JavaScript components
-├── tests/                  # Testing directory (currently empty)
+├── tests/                 # Testing directory with Playwright E2E tests
 ├── index.html              # Main HTML file
 ├── script.js               # Main game logic
 ├── styles.css              # Game styles
 ├── jquery-3.7.1.min.js    # jQuery library
+├── playwright.config.js    # Playwright configuration
+├── package.json            # Node.js dependencies and scripts
+├── package-lock.json       # Dependency lock file
 ├── README.md               # Project documentation
 ├── bug_list.md             # Active bug tracking
 └── .gitignore              # Git ignore rules
@@ -90,4 +95,6 @@ The application loads files in a specific order to ensure dependencies are met:
 - **Deep copying**: Prevents reference issues when resetting state
 
 ### Testing Approach
-- **Manual testing**: Prepare a test scenario, display it and ask user to execute it, then ask if test is sucess, faillure or limitation
+- **End-to-End Testing**: Playwright for browser automation and UI testing
+- **Unit Testing**: Jest framework configured for JavaScript modules
+- **Manual Testing**: Prepare a test scenario, display it and ask user to execute it, then ask if test is success, failure or limitation

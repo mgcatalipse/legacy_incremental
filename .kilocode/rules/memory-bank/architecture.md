@@ -23,7 +23,7 @@ Lineage Incremental
 │   ├── ageGroups.js       # Age group definitions and death chances
 │   ├── lifeEvents.js      # All available life events with effects
 │   └── stats.js           # Initial stat definitions and bounds
-└── tests/                 # Testing directory (currently empty)
+└── tests/                 # Testing directory with Playwright E2E tests
 ```
 
 ### Key Technical Decisions
