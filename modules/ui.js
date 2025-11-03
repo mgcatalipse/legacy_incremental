@@ -118,7 +118,7 @@ function renderStatCategory(categoryName, stats, previews) {
  */
 function updateStatsDisplay() {
   const previews = calculateStatPreviews();
-  
+
   let statsHtml = '<div id="stats-display"><h3>Stats</h3>';
   statsHtml += renderStatCategory('Innate', gameState.stats.innate, previews);
   statsHtml += renderStatCategory('Skills', gameState.stats.skills, previews);
@@ -129,7 +129,7 @@ function updateStatsDisplay() {
   $('.left-panel').html(`
     <div id="age-display">
       <h2 id="age-title">${getCurrentAgeGroup(gameState.age).name}</h2>
-      <div id="age-points">Age: ${gameState.age}</div>
+      <div id="age-points">${getCurrentAgeGroup(gameState.age).name} Age: ${gameState.age}</div>
     </div>
     ${statsHtml}
   `);

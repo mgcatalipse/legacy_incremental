@@ -1,0 +1,83 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]: Lineage Incremental
+  - generic [ref=e5] [cursor=pointer]: Human
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - heading "Baby" [level=2] [ref=e11]
+          - generic [ref=e12]: "Baby Age: 0"
+        - generic [ref=e13]:
+          - heading "Stats" [level=3] [ref=e14]
+          - generic [ref=e15]:
+            - heading "Innate" [level=4] [ref=e16]
+            - generic [ref=e17]:
+              - generic [ref=e18]: "Health:"
+              - generic [ref=e19]: "100"
+            - generic [ref=e20]:
+              - generic [ref=e21]: "Beauty:"
+              - generic [ref=e22]: "5"
+            - generic [ref=e23]:
+              - generic [ref=e24]: "Charisma:"
+              - generic [ref=e25]: "5"
+            - generic [ref=e26]:
+              - generic [ref=e27]: "Intelligence:"
+              - generic [ref=e28]: "5"
+            - generic [ref=e29]:
+              - generic [ref=e30]: "Strength:"
+              - generic [ref=e31]: "5"
+            - generic [ref=e32]:
+              - generic [ref=e33]: "Agility:"
+              - generic [ref=e34]: "5"
+            - generic [ref=e35]:
+              - generic [ref=e36]: "Luck:"
+              - generic [ref=e37]: "5"
+            - generic [ref=e38]:
+              - generic [ref=e39]: "Stress:"
+              - generic [ref=e40]: "0"
+          - generic [ref=e41]:
+            - heading "Skills" [level=4] [ref=e42]
+            - generic [ref=e43]:
+              - generic [ref=e44]: "Education:"
+              - generic [ref=e45]: "0"
+            - generic [ref=e46]:
+              - generic [ref=e47]: "Labor:"
+              - generic [ref=e48]: "0"
+          - generic [ref=e49]:
+            - heading "Possessions" [level=4] [ref=e50]
+            - generic [ref=e51]:
+              - generic [ref=e52]: "Money:"
+              - generic [ref=e53]: $0
+            - generic [ref=e54]:
+              - generic [ref=e55]: "Comfort:"
+              - generic [ref=e56]: "0"
+      - generic [ref=e58] [cursor=pointer]: <
+      - generic [ref=e60]:
+        - heading "Life Events (0/1 selectable without penalties)" [level=3] [ref=e61]
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - generic [ref=e64] [cursor=pointer]:
+              - checkbox "Learn to Walk" [ref=e65]
+              - generic [ref=e66]: Learn to Walk
+            - generic [ref=e67]: Take your first steps! +5 agility [Select to apply on next age-up]
+          - generic [ref=e68]:
+            - generic [ref=e69] [cursor=pointer]:
+              - checkbox "First Words" [ref=e70]
+              - generic [ref=e71]: First Words
+            - generic [ref=e72]: Speak your first words! +5 intelligence [Select to apply on next age-up]
+          - separator [ref=e73]
+          - generic [ref=e74]:
+            - generic [ref=e75] [cursor=pointer]:
+              - checkbox "Enjoy life Repeatable" [ref=e76]
+              - generic [ref=e77]: Enjoy life
+              - generic [ref=e78]: Repeatable
+            - generic [ref=e79]: Do nothing ! Reduce moderate amount of stress [Select to apply on next age-up]
+      - generic [ref=e81] [cursor=pointer]: ">"
+      - heading "Log" [level=3] [ref=e84]
+    - generic [ref=e86]:
+      - generic [ref=e87] [cursor=pointer]: Age Up (+1 year, 4.0% death risk)
+      - generic [ref=e88]: Prestige
+```
