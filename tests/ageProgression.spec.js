@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { clickWithTimeout } from './helpers.js';
 
 test.describe('Age Progression Without Events', () => {
   test('age increments correctly with multiple age up clicks', async ({ page }) => {
@@ -8,6 +9,11 @@ test.describe('Age Progression Without Events', () => {
     // Wait for network idle state
     await page.waitForLoadState('networkidle');
 
+    // Disable death for this test
+    await page.evaluate(() => {
+      gameState.disableDeath = true;
+    });
+
     // Verify initial state
     await expect(page.locator('#age-title')).toHaveText('Baby');
     await expect(page.locator('#age-points')).toHaveText('Baby Age: 0');
@@ -16,7 +22,7 @@ test.describe('Age Progression Without Events', () => {
     const gainButton = page.locator('#gain');
 
     for (let i = 1; i <= 5; i++) {
-      await gainButton.click();
+      await clickWithTimeout(page, '#gain');
       const expectedGroup = i <= 2 ? 'Baby' : 'Child';
       await expect(page.locator('#age-points')).toHaveText(`${expectedGroup} Age: ${i}`);
       await expect(page.locator('#age-title')).toHaveText(expectedGroup);
@@ -30,6 +36,11 @@ test.describe('Age Progression Without Events', () => {
     await page.goto('http://127.0.0.1:5500');
     await page.waitForLoadState('networkidle');
 
+    // Disable death for this test
+    await page.evaluate(() => {
+      gameState.disableDeath = true;
+    });
+
     const gainButton = page.locator('#gain');
 
     // Start as Baby (age 0-2)
@@ -37,37 +48,37 @@ test.describe('Age Progression Without Events', () => {
 
     // Age to 2 (still Baby)
     for (let i = 0; i < 2; i++) {
-      await gainButton.click();
+      await clickWithTimeout(page, '#gain');
     }
     await expect(page.locator('#age-title')).toHaveText('Baby');
     await expect(page.locator('#age-points')).toHaveText('Baby Age: 2');
 
     // Age to 3 (should become Child)
-    await gainButton.click();
+    await clickWithTimeout(page, '#gain');
     await expect(page.locator('#age-title')).toHaveText('Child');
     await expect(page.locator('#age-points')).toHaveText('Child Age: 3');
 
     // Age to 12 (still Child)
     for (let i = 0; i < 9; i++) {
-      await gainButton.click();
+      await clickWithTimeout(page, '#gain');
     }
     await expect(page.locator('#age-title')).toHaveText('Child');
     await expect(page.locator('#age-points')).toHaveText('Child Age: 12');
 
     // Age to 13 (should become Teenager)
-    await gainButton.click();
+    await clickWithTimeout(page, '#gain');
     await expect(page.locator('#age-title')).toHaveText('Teenager');
     await expect(page.locator('#age-points')).toHaveText('Teenager Age: 13');
 
     // Age to 19 (still Teenager)
     for (let i = 0; i < 6; i++) {
-      await gainButton.click();
+      await clickWithTimeout(page, '#gain');
     }
     await expect(page.locator('#age-title')).toHaveText('Teenager');
     await expect(page.locator('#age-points')).toHaveText('Teenager Age: 19');
 
     // Age to 20 (should become Adult)
-    await gainButton.click();
+    await clickWithTimeout(page, '#gain');
     await expect(page.locator('#age-title')).toHaveText('Adult');
     await expect(page.locator('#age-points')).toHaveText('Adult Age: 20');
   });
@@ -76,6 +87,11 @@ test.describe('Age Progression Without Events', () => {
     await page.goto('http://127.0.0.1:5500');
     await page.waitForLoadState('networkidle');
 
+    // Disable death for this test
+    await page.evaluate(() => {
+      gameState.disableDeath = true;
+    });
+
     const gainButton = page.locator('#gain');
 
     // Initial death risk (Baby age 0)
@@ -83,23 +99,23 @@ test.describe('Age Progression Without Events', () => {
 
     // Age to 2 (still Baby, same death risk)
     for (let i = 0; i < 2; i++) {
-      await gainButton.click();
+      await clickWithTimeout(page, '#gain');
     }
     await expect(gainButton).toContainText('Age Up');
 
     // Age to 3 (Child, different death risk)
-    await gainButton.click();
+    await clickWithTimeout(page, '#gain');
     await expect(gainButton).toContainText('Age Up');
 
     // Age to 13 (Teenager)
     for (let i = 0; i < 10; i++) {
-      await gainButton.click();
+      await clickWithTimeout(page, '#gain');
     }
     await expect(gainButton).toContainText('Age Up');
 
     // Age to 20 (Adult)
     for (let i = 0; i < 7; i++) {
-      await gainButton.click();
+      await clickWithTimeout(page, '#gain');
     }
     await expect(gainButton).toContainText('Age Up');
   });
@@ -108,11 +124,16 @@ test.describe('Age Progression Without Events', () => {
     await page.goto('http://127.0.0.1:5500');
     await page.waitForLoadState('networkidle');
 
+    // Disable death for this test
+    await page.evaluate(() => {
+      gameState.disableDeath = true;
+    });
+
     const gainButton = page.locator('#gain');
 
     // Rapid clicking - click 10 times quickly
     for (let i = 0; i < 10; i++) {
-      await gainButton.click();
+      await clickWithTimeout(page, '#gain', { timeout: 0 });
     }
 
     // Verify age progressed correctly despite rapid clicking (should be Child Age: 10)
@@ -125,6 +146,8 @@ test.describe('Age Progression Without Events', () => {
   });
 
   test('age progression continues to maximum age', async ({ page }) => {
+    test.setTimeout(120000); // 2 minutes timeout for 200 age-up clicks
+
     await page.goto('http://127.0.0.1:5500');
     await page.waitForLoadState('networkidle');
 
@@ -137,21 +160,21 @@ test.describe('Age Progression Without Events', () => {
 
     // Age up to 66 (Adult to Elder transition - Elder starts at 66)
     for (let i = 0; i < 66; i++) {
-      await gainButton.click();
+      await clickWithTimeout(page, '#gain');
     }
     await expect(page.locator('#age-title')).toHaveText('Elder');
     await expect(page.locator('#age-points')).toHaveText('Elder Age: 66');
 
     // Continue to age 100
     for (let i = 0; i < 34; i++) {
-      await gainButton.click();
+      await clickWithTimeout(page, '#gain');
     }
     await expect(page.locator('#age-title')).toHaveText('Elder');
     await expect(page.locator('#age-points')).toHaveText('Elder Age: 100');
 
     // Continue to age 200 (but Elder starts at 66, so 200 is still Elder)
     for (let i = 0; i < 100; i++) {
-      await gainButton.click();
+      await clickWithTimeout(page, '#gain');
     }
     await expect(page.locator('#age-title')).toHaveText('Elder');
     await expect(page.locator('#age-points')).toHaveText('Elder Age: 200');
@@ -186,7 +209,7 @@ test.describe('Age Progression Without Events', () => {
       // Age up to the max age for this group
       const clicksNeeded = group.maxAge - currentAge;
       for (let i = 0; i < clicksNeeded; i++) {
-        await gainButton.click();
+        await clickWithTimeout(page, '#gain');
       }
 
       currentAge = group.maxAge;

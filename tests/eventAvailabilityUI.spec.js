@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { clickWithTimeout } from './helpers.js';
 
 test.describe('Event Availability Filtering - UI Integration Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -27,8 +28,7 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
   test('displays child events for age 5', async ({ page }) => {
     // Age up to child age (age 5)
     for (let i = 0; i < 5; i++) {
-      await page.click('#gain');
-      await page.waitForTimeout(100); // Brief pause between clicks
+      await clickWithTimeout(page, '#gain');
     }
 
     // Verify age
@@ -50,8 +50,7 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
 
     // Age up to teen age (age 15)
     for (let i = 0; i < 15; i++) {
-      await page.click('#gain');
-      await page.waitForTimeout(100); // Brief pause between clicks
+      await clickWithTimeout(page, '#gain');
     }
 
     // Verify age
@@ -71,7 +70,7 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
 
     // Select and complete "Learn to Walk" event
     await page.check('input[data-event-id="first_steps"]');
-    await page.click('#gain');
+    await clickWithTimeout(page, '#gain');
 
     // Age increments after event processing, so should be age 1 now
     await expect(page.locator('#age-points')).toHaveText('Baby Age: 1');
@@ -82,13 +81,12 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
   test('repeatable events remain available after completion', async ({ page }) => {
     // Age up to child age (age 5)
     for (let i = 0; i < 5; i++) {
-      await page.click('#gain');
-      await page.waitForTimeout(100);
+      await clickWithTimeout(page, '#gain');
     }
 
     // Select and complete "Attend School" (repeatable)
     await page.check('input[data-event-id="school"]');
-    await page.click('#gain');
+    await clickWithTimeout(page, '#gain');
 
     // Age increments to 6 after event processing
     await expect(page.locator('#age-points')).toHaveText('Child Age: 6');
@@ -98,8 +96,7 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
   test('handles age boundaries correctly - age 2 to 3 transition', async ({ page }) => {
     // Age up to age 2 (still baby) - age increments after each click
     for (let i = 0; i < 2; i++) {
-      await page.click('#gain');
-      await page.waitForTimeout(100);
+      await clickWithTimeout(page, '#gain');
     }
 
     await expect(page.locator('#age-points')).toHaveText('Baby Age: 2');
@@ -107,8 +104,7 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
     await expect(page.locator('#events-list')).toContainText('First Words');
 
     // Age up to age 3 (now child)
-    await page.click('#gain');
-    await page.waitForTimeout(100);
+    await clickWithTimeout(page, '#gain');
 
     await expect(page.locator('#age-points')).toHaveText('Child Age: 3');
     await expect(page.locator('#events-list')).toContainText('Attend School');
@@ -117,10 +113,14 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
   });
 
   test('shows events for maximum age', async ({ page }) => {
+    // Disable death for this test
+    await page.evaluate(() => {
+      gameState.disableDeath = true;
+    });
+
     // Age up to elder age (age 70) - events are available up to 200
     for (let i = 0; i < 70; i++) {
-      await page.click('#gain');
-      await page.waitForTimeout(100); 
+      await clickWithTimeout(page, '#gain');
     }
 
     // Should show elder events
@@ -136,8 +136,7 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
 
     // Age up to teen age (age 16) - when "Find a Wife" becomes available
     for (let i = 0; i < 16; i++) {
-      await page.click('#gain');
-      await page.waitForTimeout(100);
+      await clickWithTimeout(page, '#gain');
     }
 
     await expect(page.locator('#age-points')).toHaveText('Teenager Age: 16');
@@ -159,15 +158,13 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
 
     // Age up to adult age (age 65) - adult group goes to 65
     for (let i = 0; i < 65; i++) {
-      await page.click('#gain');
-      await page.waitForTimeout(50); // Faster for bulk aging
+      await clickWithTimeout(page, '#gain', { timeout: 50 });
     }
 
     await expect(page.locator('#age-points')).toHaveText('Adult Age: 65');
 
     // Age up one more to reach elder (age 66)
-    await page.click('#gain');
-    await page.waitForTimeout(100);
+    await clickWithTimeout(page, '#gain');
 
     await expect(page.locator('#age-points')).toHaveText('Elder Age: 66');
 
@@ -183,17 +180,15 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
     await expect(page.locator('#events-list')).toContainText('Learn to Walk');
 
     // Age up once
-    await page.click('#gain');
-    await page.waitForTimeout(100);
+    await clickWithTimeout(page, '#gain');
 
     // Still baby events at age 1
     await expect(page.locator('#age-points')).toHaveText('Baby Age: 1');
     await expect(page.locator('#events-list')).toContainText('Learn to Walk');
 
     // Age up to age 3 (transition to child)
-    await page.click('#gain');
-    await page.click('#gain');
-    await page.waitForTimeout(100);
+    await clickWithTimeout(page, '#gain');
+    await clickWithTimeout(page, '#gain');
 
     // Should now show child events
     await expect(page.locator('#age-points')).toHaveText('Child Age: 3');

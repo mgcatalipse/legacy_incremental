@@ -133,6 +133,10 @@ function updateStatsDisplay() {
     </div>
     ${statsHtml}
   `);
+
+  // Also update the separate age elements for backward compatibility
+  $("#age-title").text(getCurrentAgeGroup(gameState.age).name);
+  $("#age-points").text(`${getCurrentAgeGroup(gameState.age).name} Age: ${gameState.age}`);
 }
 
 // Helper function to update age display

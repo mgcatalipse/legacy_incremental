@@ -76,8 +76,13 @@
               - generic [ref=e78]: Repeatable
             - generic [ref=e79]: Do nothing ! Reduce moderate amount of stress [Select to apply on next age-up]
       - generic [ref=e81] [cursor=pointer]: ">"
-      - heading "Log" [level=3] [ref=e84]
-    - generic [ref=e86]:
-      - generic [ref=e87] [cursor=pointer]: Age Up (+1 year, 4.0% death risk)
-      - generic [ref=e88]: Prestige
+      - generic [ref=e83]:
+        - heading "Log" [level=3] [ref=e84]
+        - generic [ref=e85]:
+          - generic [ref=e86]: "[2:21:21 PM] Aged up to 1 years old. Unfortunately, you have died."
+          - generic [ref=e87]: "[2:21:21 PM] Luck save: Rolled 80 (need 1 or lower). Survival chance: 1%. Failed luck save, died."
+          - generic [ref=e88]: "[2:21:21 PM] Death roll: 3.424087298320855% vs 4% chance. Death triggered."
+    - generic [ref=e89]:
+      - generic [ref=e90] [cursor=pointer]: Age Up (+1 year, 4.0% death risk)
+      - generic [ref=e91]: Prestige
 ```
