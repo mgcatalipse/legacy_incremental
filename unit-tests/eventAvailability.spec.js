@@ -109,6 +109,9 @@ global.gameState = {
 // Import the function to test
 const { getAvailableEvents } = require('../modules/events.js');
 
+// Jest unit tests for event availability filtering
+// Run with: npm test
+
 describe('Event Availability Filtering - Unit Tests', () => {
   beforeEach(() => {
     // Reset gameState for each test

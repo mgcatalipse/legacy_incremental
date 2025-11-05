@@ -181,8 +181,8 @@ function computeFinalStats(previews) {
   return finalStats;
 }
 
-// Generate penalty text for display
-function generatePenaltyText(penalties) {
+// Generate penalty text for display (deprecated - use generatePenaltyText(event, selectedCount) instead)
+function generatePenaltyTextOld(penalties) {
   const penaltyTexts = [];
   for (const [category, stats] of Object.entries(penalties)) {
     for (const [stat, value] of Object.entries(stats)) {

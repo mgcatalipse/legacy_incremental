@@ -43,6 +43,11 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
   });
 
   test('displays teen events for age 15', async ({ page }) => {
+    // Disable death for this test
+    await page.evaluate(() => {
+      gameState.disableDeath = true;
+    });
+
     // Age up to teen age (age 15)
     for (let i = 0; i < 15; i++) {
       await page.click('#gain');
@@ -115,7 +120,7 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
     // Age up to elder age (age 70) - events are available up to 200
     for (let i = 0; i < 70; i++) {
       await page.click('#gain');
-      await page.waitForTimeout(50); // Faster for bulk aging
+      await page.waitForTimeout(100); 
     }
 
     // Should show elder events
@@ -124,6 +129,11 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
   });
 
   test('respects special requirements for family events', async ({ page }) => {
+    // Disable death for this test
+    await page.evaluate(() => {
+      gameState.disableDeath = true;
+    });
+
     // Age up to teen age (age 16) - when "Find a Wife" becomes available
     for (let i = 0; i < 16; i++) {
       await page.click('#gain');
@@ -142,6 +152,11 @@ test.describe('Event Availability Filtering - UI Integration Tests', () => {
   });
 
   test('displays elder events for age 65', async ({ page }) => {
+    // Disable death for this test
+    await page.evaluate(() => {
+      gameState.disableDeath = true;
+    });
+
     // Age up to adult age (age 65) - adult group goes to 65
     for (let i = 0; i < 65; i++) {
       await page.click('#gain');

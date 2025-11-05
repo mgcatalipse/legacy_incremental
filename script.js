@@ -20,7 +20,8 @@ const gameState = {
   selectedWife: null,
   showWifeSelection: false,
   showChildSelection: false,
-  preservedSelections: new Set()
+  preservedSelections: new Set(),
+  disableDeath: false // For testing purposes
 };
 
 
@@ -245,7 +246,7 @@ function applyElderHealthReduction() {
  * Check if character died and handle game over state
  */
 function checkForDeath() {
-  if (checkDeath(gameState.age)) {
+  if (!gameState.disableDeath && checkDeath(gameState.age)) {
     gameState.isDead = true;
     addLogMessage(`Aged up to ${gameState.age} years old. Unfortunately, you have died.`);
     return true;

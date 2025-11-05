@@ -128,6 +128,11 @@ test.describe('Age Progression Without Events', () => {
     await page.goto('http://127.0.0.1:5500');
     await page.waitForLoadState('networkidle');
 
+    // Disable death for this test
+    await page.evaluate(() => {
+      gameState.disableDeath = true;
+    });
+
     const gainButton = page.locator('#gain');
 
     // Age up to 66 (Adult to Elder transition - Elder starts at 66)
@@ -138,7 +143,7 @@ test.describe('Age Progression Without Events', () => {
     await expect(page.locator('#age-points')).toHaveText('Elder Age: 66');
 
     // Continue to age 100
-    for (let i = 0; i < 29; i++) {
+    for (let i = 0; i < 34; i++) {
       await gainButton.click();
     }
     await expect(page.locator('#age-title')).toHaveText('Elder');
@@ -158,6 +163,11 @@ test.describe('Age Progression Without Events', () => {
   test('age progression works across different age groups without events', async ({ page }) => {
     await page.goto('http://127.0.0.1:5500');
     await page.waitForLoadState('networkidle');
+
+    // Disable death for this test
+    await page.evaluate(() => {
+      gameState.disableDeath = true;
+    });
 
     const gainButton = page.locator('#gain');
 
